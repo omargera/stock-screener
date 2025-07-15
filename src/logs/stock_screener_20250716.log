@@ -4,3 +4,74 @@
 2025-07-16 00:16:10,881 - gateways.stock_data_gateway - WARNING - Insufficient data points for AAPL: 5
 2025-07-16 00:16:10,881 - gateways.stock_data_gateway - WARNING - Data quality validation failed for AAPL
 2025-07-16 00:16:10,884 - __main__ - WARNING - System health check found issues
+2025-07-16 00:25:34,890 - utils.logging_config - INFO - Logging configured - Level: INFO, File: True
+2025-07-16 00:25:34,891 - __main__ - INFO - Starting screening with config: {'period': '3mo', 'volume_spike_threshold': 2.0, 'breakout_threshold': 0.02}
+2025-07-16 00:25:34,891 - services.screener_service - INFO - Starting screening of 15 stocks...
+2025-07-16 00:25:34,891 - services.screener_service - INFO - Screening AAPL...
+2025-07-16 00:25:34,891 - gateways.stock_data_gateway - INFO - Fetching data for AAPL with period 3mo
+2025-07-16 00:25:35,578 - gateways.stock_data_gateway - INFO - Successfully fetched 61 rows of data for AAPL
+2025-07-16 00:25:35,581 - services.screener_service - INFO - Completed screening for AAPL
+2025-07-16 00:25:35,581 - services.screener_service - INFO - Screening GOOGL...
+2025-07-16 00:25:35,581 - gateways.stock_data_gateway - INFO - Fetching data for GOOGL with period 3mo
+2025-07-16 00:25:35,783 - gateways.stock_data_gateway - INFO - Successfully fetched 61 rows of data for GOOGL
+2025-07-16 00:25:35,786 - services.screener_service - INFO - Completed screening for GOOGL
+2025-07-16 00:25:35,786 - services.screener_service - INFO - Screening MSFT...
+2025-07-16 00:25:35,786 - gateways.stock_data_gateway - INFO - Fetching data for MSFT with period 3mo
+2025-07-16 00:25:35,912 - gateways.stock_data_gateway - INFO - Successfully fetched 61 rows of data for MSFT
+2025-07-16 00:25:35,915 - services.screener_service - INFO - Completed screening for MSFT
+2025-07-16 00:25:35,915 - services.screener_service - INFO - Screening AMZN...
+2025-07-16 00:25:35,915 - gateways.stock_data_gateway - INFO - Fetching data for AMZN with period 3mo
+2025-07-16 00:25:36,123 - gateways.stock_data_gateway - INFO - Successfully fetched 61 rows of data for AMZN
+2025-07-16 00:25:36,126 - services.screener_service - INFO - Completed screening for AMZN
+2025-07-16 00:25:36,126 - services.screener_service - INFO - Screening TSLA...
+2025-07-16 00:25:36,126 - gateways.stock_data_gateway - INFO - Fetching data for TSLA with period 3mo
+2025-07-16 00:25:36,321 - gateways.stock_data_gateway - INFO - Successfully fetched 61 rows of data for TSLA
+2025-07-16 00:25:36,324 - services.screener_service - INFO - Completed screening for TSLA
+2025-07-16 00:25:36,324 - services.screener_service - INFO - Screening NVDA...
+2025-07-16 00:25:36,324 - gateways.stock_data_gateway - INFO - Fetching data for NVDA with period 3mo
+2025-07-16 00:25:36,551 - gateways.stock_data_gateway - INFO - Successfully fetched 61 rows of data for NVDA
+2025-07-16 00:25:36,554 - services.signal_detection_service - INFO - Resistance breakout detected with strength: 0.00%
+2025-07-16 00:25:36,554 - services.screener_service - INFO - Completed screening for NVDA
+2025-07-16 00:25:36,554 - services.screener_service - INFO - Screening META...
+2025-07-16 00:25:36,554 - gateways.stock_data_gateway - INFO - Fetching data for META with period 3mo
+2025-07-16 00:25:36,778 - gateways.stock_data_gateway - INFO - Successfully fetched 61 rows of data for META
+2025-07-16 00:25:36,781 - services.screener_service - INFO - Completed screening for META
+2025-07-16 00:25:36,781 - services.screener_service - INFO - Screening NFLX...
+2025-07-16 00:25:36,781 - gateways.stock_data_gateway - INFO - Fetching data for NFLX with period 3mo
+2025-07-16 00:25:36,980 - gateways.stock_data_gateway - INFO - Successfully fetched 61 rows of data for NFLX
+2025-07-16 00:25:36,983 - services.screener_service - INFO - Completed screening for NFLX
+2025-07-16 00:25:36,983 - services.screener_service - INFO - Screening AMD...
+2025-07-16 00:25:36,983 - gateways.stock_data_gateway - INFO - Fetching data for AMD with period 3mo
+2025-07-16 00:25:37,200 - gateways.stock_data_gateway - INFO - Successfully fetched 61 rows of data for AMD
+2025-07-16 00:25:37,203 - services.signal_detection_service - INFO - Resistance breakout detected with strength: 0.00%
+2025-07-16 00:25:37,203 - services.screener_service - INFO - Completed screening for AMD
+2025-07-16 00:25:37,203 - services.screener_service - INFO - Screening CRM...
+2025-07-16 00:25:37,203 - gateways.stock_data_gateway - INFO - Fetching data for CRM with period 3mo
+2025-07-16 00:25:37,401 - gateways.stock_data_gateway - INFO - Successfully fetched 61 rows of data for CRM
+2025-07-16 00:25:37,403 - services.screener_service - INFO - Completed screening for CRM
+2025-07-16 00:25:37,403 - services.screener_service - INFO - Screening BABA...
+2025-07-16 00:25:37,403 - gateways.stock_data_gateway - INFO - Fetching data for BABA with period 3mo
+2025-07-16 00:25:37,602 - gateways.stock_data_gateway - INFO - Successfully fetched 61 rows of data for BABA
+2025-07-16 00:25:37,605 - services.signal_detection_service - INFO - Resistance breakout detected with strength: 0.00%
+2025-07-16 00:25:37,605 - services.signal_detection_service - INFO - Volume spike detected on recent day: 2.4x average
+2025-07-16 00:25:37,605 - services.screener_service - INFO - Completed screening for BABA
+2025-07-16 00:25:37,605 - services.screener_service - INFO - Screening UBER...
+2025-07-16 00:25:37,605 - gateways.stock_data_gateway - INFO - Fetching data for UBER with period 3mo
+2025-07-16 00:25:37,819 - gateways.stock_data_gateway - INFO - Successfully fetched 61 rows of data for UBER
+2025-07-16 00:25:37,823 - services.screener_service - INFO - Completed screening for UBER
+2025-07-16 00:25:37,823 - services.screener_service - INFO - Screening SHOP...
+2025-07-16 00:25:37,823 - gateways.stock_data_gateway - INFO - Fetching data for SHOP with period 3mo
+2025-07-16 00:25:38,020 - gateways.stock_data_gateway - INFO - Successfully fetched 61 rows of data for SHOP
+2025-07-16 00:25:38,022 - services.screener_service - INFO - Completed screening for SHOP
+2025-07-16 00:25:38,022 - services.screener_service - INFO - Screening SQ...
+2025-07-16 00:25:38,022 - gateways.stock_data_gateway - INFO - Fetching data for SQ with period 3mo
+2025-07-16 00:25:39,091 - yfinance - ERROR - $SQ: possibly delisted; no price data found  (period=3mo) (Yahoo error = "No data found, symbol may be delisted")
+2025-07-16 00:25:39,092 - gateways.stock_data_gateway - WARNING - No data found for symbol: SQ
+2025-07-16 00:25:39,092 - services.screener_service - WARNING - Failed to fetch data for SQ
+2025-07-16 00:25:39,092 - services.screener_service - INFO - Screening PYPL...
+2025-07-16 00:25:39,092 - gateways.stock_data_gateway - INFO - Fetching data for PYPL with period 3mo
+2025-07-16 00:25:39,291 - gateways.stock_data_gateway - INFO - Successfully fetched 61 rows of data for PYPL
+2025-07-16 00:25:39,294 - services.signal_detection_service - INFO - Volume spike detected on recent day: 2.1x average
+2025-07-16 00:25:39,294 - services.screener_service - INFO - Completed screening for PYPL
+2025-07-16 00:25:39,294 - services.screener_service - INFO - Screening completed: 14 successful, 1 failed out of 15 total
+2025-07-16 00:25:39,294 - __main__ - INFO - Screening completed in 4.40 seconds
