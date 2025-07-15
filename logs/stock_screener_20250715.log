@@ -1,0 +1,6 @@
+2025-07-15 23:50:26,694 - utils.logging_config - INFO - Logging configured - Level: INFO, File: True
+2025-07-15 23:50:26,695 - __main__ - INFO - Running system health check...
+2025-07-15 23:50:26,695 - gateways.stock_data_gateway - INFO - Fetching data for AAPL with period 5d
+2025-07-15 23:50:28,238 - gateways.stock_data_gateway - WARNING - Insufficient data points for AAPL: 5
+2025-07-15 23:50:28,238 - gateways.stock_data_gateway - WARNING - Data quality validation failed for AAPL
+2025-07-15 23:50:28,243 - __main__ - WARNING - System health check found issues
