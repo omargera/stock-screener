@@ -1,0 +1,229 @@
+name: Code Quality
+
+# Triggers
+"on":
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+# Jobs
+jobs:
+  linting:
+    name: Linting & Formatting
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff black isort
+          pip install -r requirements.txt
+      
+      - name: Run Ruff linting
+        run: |
+          echo "🔍 Running Ruff linter..."
+          ruff check src/ tests/ --output-format=github
+      
+      - name: Check code formatting with Black
+        run: |
+          echo "🎨 Checking code formatting with Black..."
+          black --check --diff src/ tests/
+      
+      - name: Check import sorting with isort
+        run: |
+          echo "📦 Checking import sorting with isort..."
+          isort --check-only --diff src/ tests/
+      
+      - name: Run Ruff formatting check
+        run: |
+          echo "✨ Checking Ruff formatting..."
+          ruff format --check src/ tests/
+
+  type-checking:
+    name: Type Checking
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mypy types-requests
+          pip install -r requirements.txt
+      
+      - name: Run MyPy type checking
+        run: |
+          echo "🔍 Running MyPy type checking..."
+          mypy src/ --ignore-missing-imports --show-error-codes
+        continue-on-error: true
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit safety
+          pip install -r requirements.txt
+      
+      - name: Run Bandit security scan
+        run: |
+          echo "🔒 Running Bandit security scan..."
+          bandit -r src/ -f json -o bandit-report.json || true
+          bandit -r src/ -f txt
+        continue-on-error: true
+      
+      - name: Run Safety dependency scan
+        run: |
+          echo "🛡️ Running Safety dependency scan..."
+          safety check --json --output safety-report.json || true
+          safety check
+        continue-on-error: true
+      
+      - name: Upload security artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+            safety-report.json
+
+  complexity-analysis:
+    name: Code Complexity Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install radon xenon
+          pip install -r requirements.txt
+      
+      - name: Run Radon complexity analysis
+        run: |
+          echo "📊 Running Radon complexity analysis..."
+          echo "=== Cyclomatic Complexity ==="
+          radon cc src/ -a -s
+          echo ""
+          echo "=== Maintainability Index ==="
+          radon mi src/ -s
+          echo ""
+          echo "=== Raw Metrics ==="
+          radon raw src/ -s
+      
+      - name: Run Xenon complexity check
+        run: |
+          echo "🔍 Running Xenon complexity check..."
+          xenon --max-absolute B --max-modules A --max-average A src/
+        continue-on-error: true
+
+  documentation:
+    name: Documentation Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pydocstyle interrogate
+          pip install -r requirements.txt
+      
+      - name: Check docstring coverage
+        run: |
+          echo "📚 Checking docstring coverage with interrogate..."
+          interrogate src/ -v --ignore-init-method --ignore-magic --ignore-private
+        continue-on-error: true
+      
+      - name: Check docstring style
+        run: |
+          echo "📖 Checking docstring style with pydocstyle..."
+          pydocstyle src/ --convention=google
+        continue-on-error: true
+
+  dependencies:
+    name: Dependency Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-audit pipdeptree
+          pip install -r requirements.txt
+      
+      - name: Audit dependencies for vulnerabilities
+        run: |
+          echo "🔍 Auditing dependencies for vulnerabilities..."
+          pip-audit --format=json --output=pip-audit-report.json || true
+          pip-audit
+        continue-on-error: true
+      
+      - name: Show dependency tree
+        run: |
+          echo "🌳 Dependency tree:"
+          pipdeptree
+      
+      - name: Upload dependency audit
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: dependency-audit
+          path: pip-audit-report.json 
