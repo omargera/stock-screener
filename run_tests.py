@@ -3,10 +3,10 @@
 Test runner for the stock screener project
 """
 
-import sys
-import subprocess
 import argparse
 import os
+import subprocess
+import sys
 from pathlib import Path
 
 
@@ -17,7 +17,7 @@ def run_command(command, description=""):
     print(f"{'='*60}")
     print(f"Running: {' '.join(command)}")
     print()
-    
+
     # Set up environment with src in PYTHONPATH
     env = os.environ.copy()
     current_pythonpath = env.get('PYTHONPATH', '')
@@ -26,9 +26,9 @@ def run_command(command, description=""):
         env['PYTHONPATH'] = f"{src_path}:{current_pythonpath}"
     else:
         env['PYTHONPATH'] = src_path
-    
+
     try:
-        result = subprocess.run(command, check=True, capture_output=False, env=env)
+        subprocess.run(command, check=True, capture_output=False, env=env)
         print(f"\n✅ {description} - PASSED")
         return True
     except subprocess.CalledProcessError as e:
@@ -53,58 +53,58 @@ Examples:
   python run_tests.py --verbose          # Verbose output
         """
     )
-    
+
     parser.add_argument(
         '--unit', '-u',
         action='store_true',
         help='Run only unit tests'
     )
-    
+
     parser.add_argument(
         '--integration', '-i',
         action='store_true',
         help='Run only integration tests'
     )
-    
+
     parser.add_argument(
         '--coverage', '-c',
         action='store_true',
         help='Run tests with coverage report'
     )
-    
+
     parser.add_argument(
         '--fast', '-f',
         action='store_true',
         help='Skip slow tests'
     )
-    
+
     parser.add_argument(
         '--verbose', '-v',
         action='store_true',
         help='Verbose output'
     )
-    
+
     parser.add_argument(
         '--parallel', '-p',
         action='store_true',
         help='Run tests in parallel'
     )
-    
+
     parser.add_argument(
         '--markers', '-m',
         help='Run tests with specific markers (e.g., -m "not slow")'
     )
-    
+
     parser.add_argument(
         '--pattern', '-k',
         help='Run tests matching pattern'
     )
-    
+
     args = parser.parse_args()
-    
+
     # Build pytest command
     cmd = ['python', '-m', 'pytest']
-    
+
     # Add test paths
     if args.unit:
         cmd.append('tests/unit')
@@ -112,62 +112,62 @@ Examples:
         cmd.append('tests/integration')
     else:
         cmd.append('tests/')
-    
+
     # Add coverage if requested
     if args.coverage:
         cmd.extend(['--cov=src/models', '--cov=src/services', '--cov=src/gateways', '--cov=src/utils'])
         cmd.extend(['--cov-report=term-missing', '--cov-report=html:htmlcov'])
-    
+
     # Add verbosity
     if args.verbose:
         cmd.append('-v')
     else:
         cmd.append('--tb=short')
-    
+
     # Add parallel execution
     if args.parallel:
         cmd.extend(['-n', 'auto'])
-    
+
     # Add markers
     if args.fast:
         cmd.extend(['-m', 'not slow'])
     elif args.markers:
         cmd.extend(['-m', args.markers])
-    
+
     # Add pattern matching
     if args.pattern:
         cmd.extend(['-k', args.pattern])
-    
+
     # Additional options
     cmd.extend([
         '--strict-markers',
         '--strict-config',
         '--color=yes'
     ])
-    
+
     print("🔍 Stock Screener Test Suite")
     print("="*60)
-    
+
     # Check if pytest is available
     try:
-        subprocess.run(['python', '-m', 'pytest', '--version'], 
+        subprocess.run(['python', '-m', 'pytest', '--version'],
                       check=True, capture_output=True)
     except subprocess.CalledProcessError:
         print("❌ pytest not found. Please install test dependencies:")
         print("   pip install -r requirements.txt")
         return 1
-    
+
     # Run tests
     success = run_command(cmd, "Running Tests")
-    
+
     if success:
         print("\n🎉 All tests passed!")
-        
+
         if args.coverage:
             print("\n📊 Coverage report generated:")
             print("   - Terminal: See output above")
             print("   - HTML: Open htmlcov/index.html in browser")
-        
+
         return 0
     else:
         print("\n💥 Some tests failed!")
@@ -184,7 +184,7 @@ def run_quick_tests():
         '-x',  # Stop on first failure
         '--color=yes'
     ]
-    
+
     return run_command(cmd, "Quick Test Suite")
 
 
@@ -196,13 +196,13 @@ def run_full_test_suite():
             'python', '-m', 'pytest',
             'tests/unit',
             '--cov=src/models',
-            '--cov=src/services', 
+            '--cov=src/services',
             '--cov=src/gateways',
             '--cov=src/utils',
             '--cov-report=term-missing',
             '-v'
         ], "Unit Tests with Coverage"),
-        
+
         # Integration tests
         ([
             'python', '-m', 'pytest',
@@ -210,7 +210,7 @@ def run_full_test_suite():
             '-v',
             '--tb=short'
         ], "Integration Tests"),
-        
+
         # Signal accuracy tests
         ([
             'python', '-m', 'pytest',
@@ -219,16 +219,16 @@ def run_full_test_suite():
             '--tb=long'
         ], "Signal Accuracy Tests")
     ]
-    
+
     all_passed = True
     for cmd, description in commands:
         success = run_command(cmd, description)
         if not success:
             all_passed = False
-    
+
     return all_passed
 
 
 if __name__ == '__main__':
     exit_code = main()
-    sys.exit(exit_code) 
+    sys.exit(exit_code)

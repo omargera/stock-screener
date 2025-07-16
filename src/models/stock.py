@@ -3,9 +3,10 @@ Stock data model for representing stock information
 """
 
 from dataclasses import dataclass
-from typing import Optional
-import pandas as pd
 from datetime import datetime
+from typing import Optional
+
+import pandas as pd
 
 
 @dataclass
@@ -41,7 +42,7 @@ class TechnicalIndicators:
     price_volatility: float
     resistance: float
     support: float
-    
+
     @classmethod
     def from_data(cls, data: pd.DataFrame) -> 'TechnicalIndicators':
         """Create TechnicalIndicators from pandas DataFrame"""
@@ -58,36 +59,36 @@ class TechnicalIndicators:
 
 class StockData:
     """Container for stock data and calculated indicators"""
-    
+
     def __init__(self, symbol: str, raw_data: pd.DataFrame):
         self.symbol = symbol
         self.raw_data = raw_data
         self._price_info: Optional[StockPrice] = None
         self._technical_indicators: Optional[TechnicalIndicators] = None
-    
+
     @property
     def price_info(self) -> StockPrice:
         """Get current price information"""
         if self._price_info is None:
             self._price_info = StockPrice.from_data(self.symbol, self.raw_data)
         return self._price_info
-    
+
     @property
     def technical_indicators(self) -> TechnicalIndicators:
         """Get technical indicators"""
         if self._technical_indicators is None:
             self._technical_indicators = TechnicalIndicators.from_data(self.raw_data)
         return self._technical_indicators
-    
+
     @property
     def has_sufficient_data(self) -> bool:
         """Check if there's enough data for analysis"""
         return len(self.raw_data) >= 21
-    
+
     def get_latest_data(self) -> pd.Series:
         """Get the latest row of data"""
         return self.raw_data.iloc[-1]
-    
+
     def get_previous_data(self) -> pd.Series:
         """Get the previous row of data"""
-        return self.raw_data.iloc[-2] if len(self.raw_data) > 1 else self.raw_data.iloc[-1] 
+        return self.raw_data.iloc[-2] if len(self.raw_data) > 1 else self.raw_data.iloc[-1]

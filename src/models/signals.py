@@ -20,17 +20,17 @@ class BreakoutSignal:
     signal: bool
     signal_type: Optional[SignalType]
     strength: float
-    
+
     @classmethod
     def no_signal(cls) -> 'BreakoutSignal':
         """Create a no-signal instance"""
         return cls(signal=False, signal_type=None, strength=0.0)
-    
+
     @classmethod
     def resistance_breakout(cls, strength: float) -> 'BreakoutSignal':
         """Create a resistance breakout signal"""
         return cls(signal=True, signal_type=SignalType.RESISTANCE_BREAKOUT, strength=strength)
-    
+
     @classmethod
     def ma_breakout(cls, strength: float) -> 'BreakoutSignal':
         """Create a moving average breakout signal"""
@@ -42,12 +42,12 @@ class VolumeSignal:
     """Represents a volume spike signal"""
     signal: bool
     volume_ratio: float
-    
+
     @classmethod
     def no_signal(cls, volume_ratio: float = 0.0) -> 'VolumeSignal':
         """Create a no-signal instance"""
         return cls(signal=False, volume_ratio=volume_ratio)
-    
+
     @classmethod
     def volume_spike(cls, volume_ratio: float) -> 'VolumeSignal':
         """Create a volume spike signal"""
@@ -59,12 +59,12 @@ class CombinedSignals:
     """Container for all signals detected for a stock"""
     breakout: BreakoutSignal
     volume: VolumeSignal
-    
+
     @property
     def has_any_signal(self) -> bool:
         """Check if any signal is detected"""
         return self.breakout.signal or self.volume.signal
-    
+
     @property
     def signal_count(self) -> int:
         """Count of active signals"""
@@ -73,4 +73,4 @@ class CombinedSignals:
             count += 1
         if self.volume.signal:
             count += 1
-        return count 
+        return count

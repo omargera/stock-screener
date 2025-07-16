@@ -1,1 +1,1 @@
-# Stock screener source package 
+# Stock screener source package

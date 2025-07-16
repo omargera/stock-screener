@@ -1,1 +1,1 @@
-# Models package for stock screener data structures 
+# Models package for stock screener data structures

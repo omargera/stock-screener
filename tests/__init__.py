@@ -1,1 +1,1 @@
-# Tests package for stock screener 
+# Tests package for stock screener
