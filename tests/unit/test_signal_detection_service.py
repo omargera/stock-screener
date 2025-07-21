@@ -15,23 +15,23 @@ class TestSignalDetectionService:
     def setup_method(self):
         """Set up test fixtures"""
         self.service = SignalDetectionService(
-            volume_spike_threshold=2.0,
-            breakout_threshold=0.02
+            volume_spike_threshold=2.0, breakout_threshold=0.02
         )
         self.technical_service = TechnicalAnalysisService()
 
     def test_resistance_breakout_detection(self, test_scenarios):
         """Test detection of resistance breakout patterns"""
         # Use the resistance breakout scenario
-        data = test_scenarios['resistance_breakout']
+        data = test_scenarios["resistance_breakout"]
         enhanced_data = self.technical_service.calculate_all_indicators(data)
 
         signals = self.service.detect_all_signals(enhanced_data)
 
         # Should detect breakout signal
         assert signals.breakout.signal, "Should detect resistance breakout"
-        assert signals.breakout.signal_type == SignalType.RESISTANCE_BREAKOUT, \
-            "Should identify as resistance breakout"
+        assert (
+            signals.breakout.signal_type == SignalType.RESISTANCE_BREAKOUT
+        ), "Should identify as resistance breakout"
         assert signals.breakout.strength > 0, "Breakout strength should be positive"
 
         # Should also detect volume spike (3x volume was set)
@@ -40,20 +40,21 @@ class TestSignalDetectionService:
 
     def test_ma_breakout_detection(self, test_scenarios):
         """Test detection of moving average breakout patterns"""
-        data = test_scenarios['ma_breakout']
+        data = test_scenarios["ma_breakout"]
         enhanced_data = self.technical_service.calculate_all_indicators(data)
 
         signals = self.service.detect_all_signals(enhanced_data)
 
         # Should detect MA breakout
         assert signals.breakout.signal, "Should detect MA breakout"
-        assert signals.breakout.signal_type == SignalType.MA_BREAKOUT, \
-            "Should identify as MA breakout"
+        assert (
+            signals.breakout.signal_type == SignalType.MA_BREAKOUT
+        ), "Should identify as MA breakout"
         assert signals.breakout.strength > 0, "Breakout strength should be positive"
 
     def test_volume_spike_only_detection(self, test_scenarios):
         """Test detection of volume spike without breakout"""
-        data = test_scenarios['volume_spike']
+        data = test_scenarios["volume_spike"]
         enhanced_data = self.technical_service.calculate_all_indicators(data)
 
         signals = self.service.detect_all_signals(enhanced_data)
@@ -65,7 +66,7 @@ class TestSignalDetectionService:
 
     def test_no_signal_detection(self, test_scenarios):
         """Test that no signals are detected in normal trading"""
-        data = test_scenarios['no_signal']
+        data = test_scenarios["no_signal"]
         enhanced_data = self.technical_service.calculate_all_indicators(data)
 
         signals = self.service.detect_all_signals(enhanced_data)
@@ -77,7 +78,7 @@ class TestSignalDetectionService:
 
     def test_false_breakout_rejection(self, test_scenarios):
         """Test that false breakouts are not detected as signals"""
-        data = test_scenarios['false_breakout']
+        data = test_scenarios["false_breakout"]
         enhanced_data = self.technical_service.calculate_all_indicators(data)
 
         signals = self.service.detect_all_signals(enhanced_data)
@@ -89,26 +90,30 @@ class TestSignalDetectionService:
         """Test signal detection with stricter thresholds"""
         strict_service = SignalDetectionService(
             volume_spike_threshold=5.0,  # Very high threshold
-            breakout_threshold=0.10      # 10% breakout threshold
+            breakout_threshold=0.10,  # 10% breakout threshold
         )
 
-        data = test_scenarios['resistance_breakout']
+        data = test_scenarios["resistance_breakout"]
         enhanced_data = self.technical_service.calculate_all_indicators(data)
 
         signals = strict_service.detect_all_signals(enhanced_data)
 
         # With strict thresholds, may not detect signals
         # Volume spike was 3x, so should not meet 5x threshold
-        assert not signals.volume.signal, "Should not detect volume spike with strict threshold"
+        assert (
+            not signals.volume.signal
+        ), "Should not detect volume spike with strict threshold"
 
     def test_custom_breakout_scenario(self, data_builder):
         """Test with custom breakout scenario"""
         # Create specific breakout pattern
-        data = (data_builder("TEST", 100.0)
-                .with_basic_data(60)
-                .with_resistance_at(110.0, 30, 50)
-                .with_breakout_on_day(55, 112.0, 2.5)
-                .build())
+        data = (
+            data_builder("TEST", 100.0)
+            .with_basic_data(60)
+            .with_resistance_at(110.0, 30, 50)
+            .with_breakout_on_day(55, 112.0, 2.5)
+            .build()
+        )
 
         enhanced_data = self.technical_service.calculate_all_indicators(data)
         signals = self.service.detect_all_signals(enhanced_data)
@@ -118,11 +123,12 @@ class TestSignalDetectionService:
         assert signals.volume.signal, "Should detect volume spike"
 
         # Check strength calculation
-        resistance = enhanced_data['Resistance'].iloc[-1]
+        resistance = enhanced_data["Resistance"].iloc[-1]
         expected_strength = (112.0 - resistance) / resistance
         actual_strength = signals.breakout.strength
-        assert abs(actual_strength - expected_strength) < 0.01, \
-            f"Breakout strength calculation incorrect: expected {expected_strength}, got {actual_strength}"
+        assert (
+            abs(actual_strength - expected_strength) < 0.01
+        ), f"Breakout strength calculation incorrect: expected {expected_strength}, got {actual_strength}"
 
     def test_breakout_signal_creation(self):
         """Test breakout signal creation methods"""
@@ -165,21 +171,27 @@ class TestSignalDetectionService:
         signals = self.service.detect_all_signals(enhanced_data)
 
         # Should not detect signals with insufficient data
-        assert not signals.breakout.signal, "Should not detect breakout with insufficient data"
-        assert not signals.volume.signal, "Should not detect volume spike with insufficient data"
+        assert (
+            not signals.breakout.signal
+        ), "Should not detect breakout with insufficient data"
+        assert (
+            not signals.volume.signal
+        ), "Should not detect volume spike with insufficient data"
 
     def test_edge_case_volume_calculations(self, data_builder):
         """Test edge cases in volume calculations"""
         data = data_builder("TEST", 100.0).with_basic_data(30).build()
 
         # Set zero average volume (edge case)
-        data['Volume'] = [0] * len(data)
+        data["Volume"] = [0] * len(data)
         enhanced_data = self.technical_service.calculate_all_indicators(data)
 
         signals = self.service.detect_all_signals(enhanced_data)
 
         # Should handle zero volume gracefully
-        assert not signals.volume.signal, "Should not detect volume spike with zero volume"
+        assert (
+            not signals.volume.signal
+        ), "Should not detect volume spike with zero volume"
         assert signals.volume.volume_ratio == 0, "Volume ratio should be 0"
 
     def test_breakout_confirmation_requirements(self, data_builder):
@@ -191,21 +203,23 @@ class TestSignalDetectionService:
 
         # Set resistance
         for i in range(30, 50):
-            data.iloc[i, data.columns.get_loc('High')] = resistance_level
+            data.iloc[i, data.columns.get_loc("High")] = resistance_level
 
         # Day 55: Price breaks but volume is too low
         breakout_day = 55
-        data.iloc[breakout_day, data.columns.get_loc('Close')] = resistance_level + 2
-        data.iloc[breakout_day, data.columns.get_loc('High')] = resistance_level + 3
-        data.iloc[breakout_day, data.columns.get_loc('Volume')] = int(
-            data.iloc[breakout_day]['Volume'] * 0.5  # Low volume
+        data.iloc[breakout_day, data.columns.get_loc("Close")] = resistance_level + 2
+        data.iloc[breakout_day, data.columns.get_loc("High")] = resistance_level + 3
+        data.iloc[breakout_day, data.columns.get_loc("Volume")] = int(
+            data.iloc[breakout_day]["Volume"] * 0.5  # Low volume
         )
 
         enhanced_data = self.technical_service.calculate_all_indicators(data)
         signals = self.service.detect_all_signals(enhanced_data)
 
         # Should not detect breakout without volume confirmation
-        assert not signals.breakout.signal, "Should not detect breakout without volume confirmation"
+        assert (
+            not signals.breakout.signal
+        ), "Should not detect breakout without volume confirmation"
 
     def test_ma_breakout_trend_requirement(self, data_builder):
         """Test that MA breakouts require uptrend confirmation"""
@@ -215,16 +229,18 @@ class TestSignalDetectionService:
         for i in range(len(data)):
             # Set SMA_20 > SMA_50 initially, then reverse for trend test
             if i < 50:
-                data.iloc[i, data.columns.get_loc('Close')] = 90.0  # Below both MAs
+                data.iloc[i, data.columns.get_loc("Close")] = 90.0  # Below both MAs
             else:
-                data.iloc[i, data.columns.get_loc('Close')] = 95.0  # Above SMA_20 but downtrend
+                data.iloc[i, data.columns.get_loc("Close")] = (
+                    95.0  # Above SMA_20 but downtrend
+                )
 
         enhanced_data = self.technical_service.calculate_all_indicators(data)
 
         # Manually create scenario where SMA_20 < SMA_50 (downtrend)
-        enhanced_data.loc[enhanced_data.index[-1], 'SMA_20'] = 90.0
-        enhanced_data.loc[enhanced_data.index[-1], 'SMA_50'] = 95.0
-        enhanced_data.loc[enhanced_data.index[-2], 'SMA_20'] = 89.0
+        enhanced_data.loc[enhanced_data.index[-1], "SMA_20"] = 90.0
+        enhanced_data.loc[enhanced_data.index[-1], "SMA_50"] = 95.0
+        enhanced_data.loc[enhanced_data.index[-2], "SMA_20"] = 89.0
 
         signals = self.service.detect_all_signals(enhanced_data)
 
@@ -233,30 +249,36 @@ class TestSignalDetectionService:
 
     def test_signal_quality_analysis(self, test_scenarios):
         """Test signal quality analysis functionality"""
-        data = test_scenarios['resistance_breakout']
+        data = test_scenarios["resistance_breakout"]
         enhanced_data = self.technical_service.calculate_all_indicators(data)
         signals = self.service.detect_all_signals(enhanced_data)
 
         quality = self.service.analyze_signal_quality(signals, enhanced_data)
 
         # Should return quality analysis
-        assert 'quality' in quality
-        assert 'confidence' in quality
-        assert 'factors' in quality
-        assert 'score' in quality
+        assert "quality" in quality
+        assert "confidence" in quality
+        assert "factors" in quality
+        assert "score" in quality
 
         # Quality should be reasonable for good breakout
-        assert quality['confidence'] > 0.0, "Confidence should be positive"
-        assert quality['quality'] in ['poor', 'fair', 'good', 'excellent'], \
-            f"Invalid quality level: {quality['quality']}"
+        assert quality["confidence"] > 0.0, "Confidence should be positive"
+        assert quality["quality"] in [
+            "poor",
+            "fair",
+            "good",
+            "excellent",
+        ], f"Invalid quality level: {quality['quality']}"
 
     def test_multiple_signal_detection(self, data_builder):
         """Test detection of multiple signals in same data"""
-        data = (data_builder("TEST", 100.0)
-                .with_basic_data(60)
-                .with_resistance_at(110.0, 30, 50)
-                .with_breakout_on_day(55, 112.0, 3.0)  # Both breakout and volume spike
-                .build())
+        data = (
+            data_builder("TEST", 100.0)
+            .with_basic_data(60)
+            .with_resistance_at(110.0, 30, 50)
+            .with_breakout_on_day(55, 112.0, 3.0)  # Both breakout and volume spike
+            .build()
+        )
 
         enhanced_data = self.technical_service.calculate_all_indicators(data)
         signals = self.service.detect_all_signals(enhanced_data)
@@ -281,12 +303,13 @@ class TestSignalDetectionService:
         performance_timer.stop()
 
         # Should complete quickly
-        assert performance_timer.elapsed < 0.1, \
-            f"Signal detection took too long: {performance_timer.elapsed} seconds"
+        assert (
+            performance_timer.elapsed < 0.1
+        ), f"Signal detection took too long: {performance_timer.elapsed} seconds"
 
         # Should return valid signals
-        assert hasattr(signals, 'breakout')
-        assert hasattr(signals, 'volume')
+        assert hasattr(signals, "breakout")
+        assert hasattr(signals, "volume")
 
     def test_signal_strength_calculations(self, data_builder):
         """Test accurate signal strength calculations"""
@@ -296,13 +319,15 @@ class TestSignalDetectionService:
         resistance = 110.0
         breakout_price = 113.0  # 2.73% above resistance
 
-        data.iloc[55, data.columns.get_loc('Close')] = breakout_price
-        data.iloc[55, data.columns.get_loc('High')] = breakout_price + 1
-        data.iloc[55, data.columns.get_loc('Volume')] = int(data.iloc[55]['Volume'] * 2.0)
+        data.iloc[55, data.columns.get_loc("Close")] = breakout_price
+        data.iloc[55, data.columns.get_loc("High")] = breakout_price + 1
+        data.iloc[55, data.columns.get_loc("Volume")] = int(
+            data.iloc[55]["Volume"] * 2.0
+        )
 
         # Set resistance level
         for i in range(30, 55):
-            data.iloc[i, data.columns.get_loc('High')] = resistance
+            data.iloc[i, data.columns.get_loc("High")] = resistance
 
         enhanced_data = self.technical_service.calculate_all_indicators(data)
         signals = self.service.detect_all_signals(enhanced_data)
@@ -312,8 +337,9 @@ class TestSignalDetectionService:
             actual_strength = signals.breakout.strength
 
             # Allow small tolerance for floating point calculations
-            assert abs(actual_strength - expected_strength) < 0.001, \
-                f"Signal strength calculation error: expected {expected_strength}, got {actual_strength}"
+            assert (
+                abs(actual_strength - expected_strength) < 0.001
+            ), f"Signal strength calculation error: expected {expected_strength}, got {actual_strength}"
 
     def test_error_handling_in_detection(self):
         """Test error handling in signal detection"""
@@ -326,7 +352,7 @@ class TestSignalDetectionService:
         assert not signals.volume.signal
 
         # Test with malformed data
-        bad_data = pd.DataFrame({'Close': [100], 'Volume': [1000]})
+        bad_data = pd.DataFrame({"Close": [100], "Volume": [1000]})
         signals = self.service.detect_all_signals(bad_data)
 
         # Should handle gracefully

@@ -12,6 +12,7 @@ import pandas as pd
 @dataclass
 class StockPrice:
     """Represents current stock price information"""
+
     symbol: str
     current_price: float
     price_change_pct: float
@@ -20,22 +21,23 @@ class StockPrice:
     timestamp: str
 
     @classmethod
-    def from_data(cls, symbol: str, data: pd.DataFrame) -> 'StockPrice':
+    def from_data(cls, symbol: str, data: pd.DataFrame) -> "StockPrice":
         """Create StockPrice from pandas DataFrame"""
         latest = data.iloc[-1]
         return cls(
             symbol=symbol,
-            current_price=round(latest['Close'], 2),
-            price_change_pct=round(latest['Price_Change_Pct'] * 100, 2),
-            volume=int(latest['Volume']),
-            avg_volume=int(latest['Volume_MA_20']),
-            timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            current_price=round(latest["Close"], 2),
+            price_change_pct=round(latest["Price_Change_Pct"] * 100, 2),
+            volume=int(latest["Volume"]),
+            avg_volume=int(latest["Volume_MA_20"]),
+            timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         )
 
 
 @dataclass
 class TechnicalIndicators:
     """Technical indicators calculated for stock analysis"""
+
     sma_20: float
     sma_50: float
     volume_ma_20: float
@@ -44,16 +46,16 @@ class TechnicalIndicators:
     support: float
 
     @classmethod
-    def from_data(cls, data: pd.DataFrame) -> 'TechnicalIndicators':
+    def from_data(cls, data: pd.DataFrame) -> "TechnicalIndicators":
         """Create TechnicalIndicators from pandas DataFrame"""
         latest = data.iloc[-1]
         return cls(
-            sma_20=latest['SMA_20'],
-            sma_50=latest['SMA_50'],
-            volume_ma_20=latest['Volume_MA_20'],
-            price_volatility=latest['Price_Volatility'],
-            resistance=latest['Resistance'],
-            support=latest['Support']
+            sma_20=latest["SMA_20"],
+            sma_50=latest["SMA_50"],
+            volume_ma_20=latest["Volume_MA_20"],
+            price_volatility=latest["Price_Volatility"],
+            resistance=latest["Resistance"],
+            support=latest["Support"],
         )
 
 
@@ -91,4 +93,6 @@ class StockData:
 
     def get_previous_data(self) -> pd.Series:
         """Get the previous row of data"""
-        return self.raw_data.iloc[-2] if len(self.raw_data) > 1 else self.raw_data.iloc[-1]
+        return (
+            self.raw_data.iloc[-2] if len(self.raw_data) > 1 else self.raw_data.iloc[-1]
+        )

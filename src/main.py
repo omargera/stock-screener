@@ -22,9 +22,21 @@ logger = LoggingConfig.get_logger(__name__)
 def get_default_symbols() -> list[str]:
     """Get the default list of symbols to screen"""
     return [
-        'AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA',
-        'NVDA', 'META', 'NFLX', 'AMD', 'CRM',
-        'BABA', 'UBER', 'SHOP', 'SQ', 'PYPL'
+        "AAPL",
+        "GOOGL",
+        "MSFT",
+        "AMZN",
+        "TSLA",
+        "NVDA",
+        "META",
+        "NFLX",
+        "AMD",
+        "CRM",
+        "BABA",
+        "UBER",
+        "SHOP",
+        "SQ",
+        "PYPL",
     ]
 
 
@@ -42,77 +54,74 @@ Examples:
   python main.py --mode top-opportunities --limit 3 # Top 3 opportunities
   python main.py --quiet                           # Quiet mode
   python main.py --health-check                    # System health check
-        """
+        """,
     )
 
     # Stock selection
     parser.add_argument(
-        '--symbols', '-s',
-        nargs='+',
-        help='Stock symbols to screen (default: popular tech stocks)'
+        "--symbols",
+        "-s",
+        nargs="+",
+        help="Stock symbols to screen (default: popular tech stocks)",
     )
 
     # Screening parameters
     parser.add_argument(
-        '--period', '-p',
-        default='3mo',
-        choices=['1mo', '3mo', '6mo', '1y', '2y', '5y'],
-        help='Time period for analysis (default: 3mo)'
+        "--period",
+        "-p",
+        default="3mo",
+        choices=["1mo", "3mo", "6mo", "1y", "2y", "5y"],
+        help="Time period for analysis (default: 3mo)",
     )
 
     parser.add_argument(
-        '--volume-threshold', '-v',
+        "--volume-threshold",
+        "-v",
         type=float,
         default=2.0,
-        help='Volume spike threshold multiplier (default: 2.0)'
+        help="Volume spike threshold multiplier (default: 2.0)",
     )
 
     parser.add_argument(
-        '--breakout-threshold', '-b',
+        "--breakout-threshold",
+        "-b",
         type=float,
         default=0.02,
-        help='Breakout threshold percentage (default: 0.02 = 2%%)'
+        help="Breakout threshold percentage (default: 0.02 = 2%%)",
     )
 
     # Operating modes
     parser.add_argument(
-        '--mode', '-m',
-        choices=['screen', 'market-analysis', 'top-opportunities', 'signals-only'],
-        default='screen',
-        help='Operating mode (default: screen)'
+        "--mode",
+        "-m",
+        choices=["screen", "market-analysis", "top-opportunities", "signals-only"],
+        default="screen",
+        help="Operating mode (default: screen)",
     )
 
     parser.add_argument(
-        '--limit', '-l',
+        "--limit",
+        "-l",
         type=int,
         default=5,
-        help='Limit results in top-opportunities mode (default: 5)'
+        help="Limit results in top-opportunities mode (default: 5)",
     )
 
     # Output options
     parser.add_argument(
-        '--quiet', '-q',
-        action='store_true',
-        help='Quiet mode - minimal output'
+        "--quiet", "-q", action="store_true", help="Quiet mode - minimal output"
     )
 
     parser.add_argument(
-        '--verbose', '--debug',
-        action='store_true',
-        help='Verbose debug output'
+        "--verbose", "--debug", action="store_true", help="Verbose debug output"
     )
 
     # System options
     parser.add_argument(
-        '--health-check',
-        action='store_true',
-        help='Run system health check and exit'
+        "--health-check", action="store_true", help="Run system health check and exit"
     )
 
-    parser.add_argument(
-        '--log-file',
-        help='Log to specified file'
-    )
+    parser.add_argument("--log-file", help="Log to specified file")
 
     return parser.parse_args()
 
@@ -131,11 +140,13 @@ def setup_logging_from_args(args):
         LoggingConfig.setup_logging(
             level="DEBUG" if args.verbose else "INFO",
             log_to_file=True,
-            log_file_path=args.log_file
+            log_file_path=args.log_file,
         )
 
 
-def run_health_check(screener_service: StockScreenerService, display: ResultsDisplayService) -> int:
+def run_health_check(
+    screener_service: StockScreenerService, display: ResultsDisplayService
+) -> int:
     """
     Run system health check
 
@@ -151,7 +162,7 @@ def run_health_check(screener_service: StockScreenerService, display: ResultsDis
     health_status = screener_service.test_system_health()
     display.display_system_health(health_status)
 
-    if health_status.get('overall') == 'healthy':
+    if health_status.get("overall") == "healthy":
         logger.info("System health check passed")
         return 0
     else:
@@ -164,7 +175,7 @@ def run_screening(
     display: ResultsDisplayService,
     symbols: list[str],
     mode: str,
-    limit: int
+    limit: int,
 ) -> int:
     """
     Run stock screening based on mode
@@ -182,25 +193,27 @@ def run_screening(
     try:
         start_time = time.time()
 
-        if mode == 'screen':
+        if mode == "screen":
             # Standard screening mode
             results = screener_service.screen_multiple_stocks(symbols)
             display.display_screening_results(results)
 
-        elif mode == 'signals-only':
+        elif mode == "signals-only":
             # Only show stocks with signals
             results = screener_service.get_stocks_with_signals(symbols)
             if results.signal_count > 0:
                 display.display_screening_results(results)
             else:
-                display.display_error_message("No signals detected in current screening.", "INFO")
+                display.display_error_message(
+                    "No signals detected in current screening.", "INFO"
+                )
 
-        elif mode == 'market-analysis':
+        elif mode == "market-analysis":
             # Market condition analysis
             analysis = screener_service.analyze_market_conditions(symbols)
             display.display_market_analysis(analysis)
 
-        elif mode == 'top-opportunities':
+        elif mode == "top-opportunities":
             # Top opportunities mode
             opportunities = screener_service.get_top_opportunities(symbols, limit)
             display.display_top_opportunities(opportunities, limit)
@@ -236,7 +249,7 @@ def main():
         config = ScreenerConfiguration(
             period=args.period,
             volume_spike_threshold=args.volume_threshold,
-            breakout_threshold=args.breakout_threshold
+            breakout_threshold=args.breakout_threshold,
         )
 
         # Initialize screener service
@@ -255,7 +268,9 @@ def main():
             logger.info(f"Starting screening with config: {vars(config)}")
 
         # Run screening
-        exit_code = run_screening(screener_service, display, symbols, args.mode, args.limit)
+        exit_code = run_screening(
+            screener_service, display, symbols, args.mode, args.limit
+        )
 
         return exit_code
 

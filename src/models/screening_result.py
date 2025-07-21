@@ -11,6 +11,7 @@ from .stock import StockPrice
 @dataclass
 class ScreeningResult:
     """Complete screening result for a single stock"""
+
     stock_price: StockPrice
     signals: CombinedSignals
 
@@ -80,7 +81,7 @@ class ScreeningResults:
             key=lambda x: (
                 x.signals.signal_count,
                 x.signals.breakout.strength if x.signals.breakout.signal else 0,
-                x.signals.volume.volume_ratio if x.signals.volume.signal else 0
+                x.signals.volume.volume_ratio if x.signals.volume.signal else 0,
             ),
-            reverse=True
+            reverse=True,
         )[:limit]

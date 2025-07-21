@@ -59,12 +59,12 @@ class TechnicalAnalysisService:
         """Calculate simple moving averages"""
         try:
             # Simple Moving Averages
-            data['SMA_20'] = data['Close'].rolling(window=20).mean()
-            data['SMA_50'] = data['Close'].rolling(window=50).mean()
+            data["SMA_20"] = data["Close"].rolling(window=20).mean()
+            data["SMA_50"] = data["Close"].rolling(window=50).mean()
 
             # Exponential Moving Averages (optional for future use)
-            data['EMA_12'] = data['Close'].ewm(span=12).mean()
-            data['EMA_26'] = data['Close'].ewm(span=26).mean()
+            data["EMA_12"] = data["Close"].ewm(span=12).mean()
+            data["EMA_26"] = data["Close"].ewm(span=26).mean()
 
             return data
         except Exception as e:
@@ -75,13 +75,13 @@ class TechnicalAnalysisService:
         """Calculate volume-based indicators"""
         try:
             # Volume moving average
-            data['Volume_MA_20'] = data['Volume'].rolling(window=20).mean()
+            data["Volume_MA_20"] = data["Volume"].rolling(window=20).mean()
 
             # Volume Rate of Change
-            data['Volume_ROC'] = data['Volume'].pct_change()
+            data["Volume_ROC"] = data["Volume"].pct_change()
 
             # On-Balance Volume (OBV)
-            data['OBV'] = self._calculate_obv(data)
+            data["OBV"] = self._calculate_obv(data)
 
             return data
         except Exception as e:
@@ -92,10 +92,10 @@ class TechnicalAnalysisService:
         """Calculate volatility measures"""
         try:
             # Price volatility (standard deviation)
-            data['Price_Volatility'] = data['Close'].rolling(window=20).std()
+            data["Price_Volatility"] = data["Close"].rolling(window=20).std()
 
             # Average True Range (ATR)
-            data['ATR'] = self._calculate_atr(data)
+            data["ATR"] = self._calculate_atr(data)
 
             return data
         except Exception as e:
@@ -106,11 +106,11 @@ class TechnicalAnalysisService:
         """Calculate support and resistance levels"""
         try:
             # Rolling maximum (resistance) and minimum (support)
-            data['Resistance'] = data['High'].rolling(window=20).max()
-            data['Support'] = data['Low'].rolling(window=20).min()
+            data["Resistance"] = data["High"].rolling(window=20).max()
+            data["Support"] = data["Low"].rolling(window=20).min()
 
             # Pivot points (optional for future use)
-            data['Pivot'] = (data['High'] + data['Low'] + data['Close']) / 3
+            data["Pivot"] = (data["High"] + data["Low"] + data["Close"]) / 3
 
             return data
         except Exception as e:
@@ -121,11 +121,11 @@ class TechnicalAnalysisService:
         """Calculate price change percentages and ratios"""
         try:
             # Daily price change percentage
-            data['Price_Change_Pct'] = data['Close'].pct_change()
+            data["Price_Change_Pct"] = data["Close"].pct_change()
 
             # Price change from SMA
-            data['Price_vs_SMA20'] = (data['Close'] - data['SMA_20']) / data['SMA_20']
-            data['Price_vs_SMA50'] = (data['Close'] - data['SMA_50']) / data['SMA_50']
+            data["Price_vs_SMA20"] = (data["Close"] - data["SMA_20"]) / data["SMA_20"]
+            data["Price_vs_SMA50"] = (data["Close"] - data["SMA_50"]) / data["SMA_50"]
 
             return data
         except Exception as e:
@@ -138,12 +138,12 @@ class TechnicalAnalysisService:
             obv = np.zeros(len(data))
 
             for i in range(1, len(data)):
-                if data['Close'].iloc[i] > data['Close'].iloc[i-1]:
-                    obv[i] = obv[i-1] + data['Volume'].iloc[i]
-                elif data['Close'].iloc[i] < data['Close'].iloc[i-1]:
-                    obv[i] = obv[i-1] - data['Volume'].iloc[i]
+                if data["Close"].iloc[i] > data["Close"].iloc[i - 1]:
+                    obv[i] = obv[i - 1] + data["Volume"].iloc[i]
+                elif data["Close"].iloc[i] < data["Close"].iloc[i - 1]:
+                    obv[i] = obv[i - 1] - data["Volume"].iloc[i]
                 else:
-                    obv[i] = obv[i-1]
+                    obv[i] = obv[i - 1]
 
             return pd.Series(obv, index=data.index)
         except Exception as e:
@@ -154,11 +154,13 @@ class TechnicalAnalysisService:
         """Calculate Average True Range"""
         try:
             # True Range calculation
-            high_low = data['High'] - data['Low']
-            high_close_prev = np.abs(data['High'] - data['Close'].shift(1))
-            low_close_prev = np.abs(data['Low'] - data['Close'].shift(1))
+            high_low = data["High"] - data["Low"]
+            high_close_prev = np.abs(data["High"] - data["Close"].shift(1))
+            low_close_prev = np.abs(data["Low"] - data["Close"].shift(1))
 
-            true_range = np.maximum(high_low, np.maximum(high_close_prev, low_close_prev))
+            true_range = np.maximum(
+                high_low, np.maximum(high_close_prev, low_close_prev)
+            )
 
             # Average True Range
             atr = pd.Series(true_range).rolling(window=window).mean()
@@ -186,17 +188,17 @@ class TechnicalAnalysisService:
             latest = data.iloc[-1]
 
             indicators = {
-                'sma_20': latest.get('SMA_20', 0),
-                'sma_50': latest.get('SMA_50', 0),
-                'volume_ma_20': latest.get('Volume_MA_20', 0),
-                'price_volatility': latest.get('Price_Volatility', 0),
-                'resistance': latest.get('Resistance', 0),
-                'support': latest.get('Support', 0),
-                'atr': latest.get('ATR', 0),
-                'obv': latest.get('OBV', 0),
-                'price_change_pct': latest.get('Price_Change_Pct', 0),
-                'price_vs_sma20': latest.get('Price_vs_SMA20', 0),
-                'price_vs_sma50': latest.get('Price_vs_SMA50', 0)
+                "sma_20": latest.get("SMA_20", 0),
+                "sma_50": latest.get("SMA_50", 0),
+                "volume_ma_20": latest.get("Volume_MA_20", 0),
+                "price_volatility": latest.get("Price_Volatility", 0),
+                "resistance": latest.get("Resistance", 0),
+                "support": latest.get("Support", 0),
+                "atr": latest.get("ATR", 0),
+                "obv": latest.get("OBV", 0),
+                "price_change_pct": latest.get("Price_Change_Pct", 0),
+                "price_vs_sma20": latest.get("Price_vs_SMA20", 0),
+                "price_vs_sma50": latest.get("Price_vs_SMA50", 0),
             }
 
             return indicators

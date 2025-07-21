@@ -13,10 +13,10 @@ class TestCompleteScreening:
         service = StockScreenerService(screener_config, mock_gateway)
 
         # Screen stock that should have resistance breakout
-        result = service.screen_single_stock('TEST_RESISTANCE')
+        result = service.screen_single_stock("TEST_RESISTANCE")
 
         assert result is not None, "Should return screening result"
-        assert result.stock_price.symbol == 'TEST_RESISTANCE'
+        assert result.stock_price.symbol == "TEST_RESISTANCE"
         assert result.stock_price.current_price > 0
         assert result.has_signals, "Should detect signals"
 
@@ -28,10 +28,10 @@ class TestCompleteScreening:
         """Test screening for stock with no signals"""
         service = StockScreenerService(screener_config, mock_gateway)
 
-        result = service.screen_single_stock('TEST_NONE')
+        result = service.screen_single_stock("TEST_NONE")
 
         assert result is not None, "Should return screening result"
-        assert result.stock_price.symbol == 'TEST_NONE'
+        assert result.stock_price.symbol == "TEST_NONE"
         assert not result.has_signals, "Should not detect signals"
         assert not result.signals.breakout.signal, "Should not detect breakout"
         assert not result.signals.volume.signal, "Should not detect volume spike"
@@ -40,7 +40,13 @@ class TestCompleteScreening:
         """Test screening multiple stocks"""
         service = StockScreenerService(screener_config, mock_gateway)
 
-        symbols = ['TEST_RESISTANCE', 'TEST_MA', 'TEST_VOLUME', 'TEST_NONE', 'TEST_FALSE']
+        symbols = [
+            "TEST_RESISTANCE",
+            "TEST_MA",
+            "TEST_VOLUME",
+            "TEST_NONE",
+            "TEST_FALSE",
+        ]
         results = service.screen_multiple_stocks(symbols)
 
         assert results.total_screened == 5, "Should screen 5 stocks"
@@ -50,24 +56,36 @@ class TestCompleteScreening:
         assert len(signal_stocks) >= 3, "Should find at least 3 stocks with signals"
 
         # Verify specific signals
-        resistance_stock = next((r for r in results.results if r.symbol == 'TEST_RESISTANCE'), None)
+        resistance_stock = next(
+            (r for r in results.results if r.symbol == "TEST_RESISTANCE"), None
+        )
         assert resistance_stock is not None, "Should find TEST_RESISTANCE"
-        assert resistance_stock.signals.breakout.signal, "TEST_RESISTANCE should have breakout"
+        assert (
+            resistance_stock.signals.breakout.signal
+        ), "TEST_RESISTANCE should have breakout"
 
-        volume_stock = next((r for r in results.results if r.symbol == 'TEST_VOLUME'), None)
+        volume_stock = next(
+            (r for r in results.results if r.symbol == "TEST_VOLUME"), None
+        )
         assert volume_stock is not None, "Should find TEST_VOLUME"
-        assert volume_stock.signals.volume.signal, "TEST_VOLUME should have volume spike"
+        assert (
+            volume_stock.signals.volume.signal
+        ), "TEST_VOLUME should have volume spike"
 
-        no_signal_stock = next((r for r in results.results if r.symbol == 'TEST_NONE'), None)
+        no_signal_stock = next(
+            (r for r in results.results if r.symbol == "TEST_NONE"), None
+        )
         assert no_signal_stock is not None, "Should find TEST_NONE"
         assert not no_signal_stock.has_signals, "TEST_NONE should have no signals"
 
-    def test_screening_with_strict_configuration(self, mock_gateway, strict_screener_config):
+    def test_screening_with_strict_configuration(
+        self, mock_gateway, strict_screener_config
+    ):
         """Test screening with strict thresholds"""
         service = StockScreenerService(strict_screener_config, mock_gateway)
 
         # Same stocks but with stricter thresholds
-        symbols = ['TEST_RESISTANCE', 'TEST_VOLUME']
+        symbols = ["TEST_RESISTANCE", "TEST_VOLUME"]
         results = service.screen_multiple_stocks(symbols)
 
         # Should find fewer signals with strict thresholds
@@ -78,7 +96,7 @@ class TestCompleteScreening:
         """Test getting only stocks with signals"""
         service = StockScreenerService(screener_config, mock_gateway)
 
-        symbols = ['TEST_RESISTANCE', 'TEST_NONE', 'TEST_VOLUME']
+        symbols = ["TEST_RESISTANCE", "TEST_NONE", "TEST_VOLUME"]
         signal_results = service.get_stocks_with_signals(symbols)
 
         # Should only return stocks with signals
@@ -94,25 +112,37 @@ class TestCompleteScreening:
         service = StockScreenerService(screener_config, mock_gateway)
 
         # Mix of stocks with and without signals
-        symbols = ['TEST_RESISTANCE', 'TEST_MA', 'TEST_VOLUME', 'TEST_NONE', 'TEST_FALSE']
+        symbols = [
+            "TEST_RESISTANCE",
+            "TEST_MA",
+            "TEST_VOLUME",
+            "TEST_NONE",
+            "TEST_FALSE",
+        ]
         analysis = service.analyze_market_conditions(symbols)
 
-        assert 'condition' in analysis, "Should include market condition"
-        assert 'signal_percentage' in analysis, "Should include signal percentage"
-        assert 'total_screened' in analysis, "Should include total screened"
-        assert 'stocks_with_signals' in analysis, "Should include signal count"
+        assert "condition" in analysis, "Should include market condition"
+        assert "signal_percentage" in analysis, "Should include signal percentage"
+        assert "total_screened" in analysis, "Should include total screened"
+        assert "stocks_with_signals" in analysis, "Should include signal count"
 
-        assert analysis['total_screened'] == 5, "Should screen 5 stocks"
-        assert analysis['signal_percentage'] >= 0, "Signal percentage should be non-negative"
-        assert analysis['condition'] in [
-            'very_bullish', 'bullish', 'neutral_positive', 'neutral', 'bearish'
+        assert analysis["total_screened"] == 5, "Should screen 5 stocks"
+        assert (
+            analysis["signal_percentage"] >= 0
+        ), "Signal percentage should be non-negative"
+        assert analysis["condition"] in [
+            "very_bullish",
+            "bullish",
+            "neutral_positive",
+            "neutral",
+            "bearish",
         ], f"Invalid market condition: {analysis['condition']}"
 
     def test_top_opportunities(self, mock_gateway, screener_config):
         """Test getting top investment opportunities"""
         service = StockScreenerService(screener_config, mock_gateway)
 
-        symbols = ['TEST_RESISTANCE', 'TEST_MA', 'TEST_VOLUME', 'TEST_NONE']
+        symbols = ["TEST_RESISTANCE", "TEST_MA", "TEST_VOLUME", "TEST_NONE"]
         opportunities = service.get_top_opportunities(symbols, limit=3)
 
         assert len(opportunities) <= 3, "Should limit to 3 opportunities"
@@ -123,19 +153,20 @@ class TestCompleteScreening:
             second_op = opportunities[1]
 
             # First opportunity should have at least as many signals as second
-            assert first_op.signals.signal_count >= second_op.signals.signal_count, \
-                "Opportunities should be sorted by signal quality"
+            assert (
+                first_op.signals.signal_count >= second_op.signals.signal_count
+            ), "Opportunities should be sorted by signal quality"
 
     def test_error_handling_in_screening(self, mock_failing_gateway, screener_config):
         """Test error handling when data fetching fails"""
         service = StockScreenerService(screener_config, mock_failing_gateway)
 
         # Should handle failed data fetching gracefully
-        result = service.screen_single_stock('INVALID')
+        result = service.screen_single_stock("INVALID")
         assert result is None, "Should return None for failed fetch"
 
         # Should handle multiple failures
-        symbols = ['INVALID1', 'INVALID2', 'INVALID3']
+        symbols = ["INVALID1", "INVALID2", "INVALID3"]
         results = service.screen_multiple_stocks(symbols)
 
         assert results.total_screened == 0, "Should screen 0 stocks due to failures"
@@ -147,29 +178,35 @@ class TestCompleteScreening:
 
         health = service.test_system_health()
 
-        assert 'overall' in health, "Should include overall status"
-        assert 'data_gateway' in health, "Should include gateway status"
-        assert 'technical_service' in health, "Should include technical service status"
-        assert 'signal_service' in health, "Should include signal service status"
+        assert "overall" in health, "Should include overall status"
+        assert "data_gateway" in health, "Should include gateway status"
+        assert "technical_service" in health, "Should include technical service status"
+        assert "signal_service" in health, "Should include signal service status"
 
         # Mock gateway should be healthy
-        assert health['data_gateway'] == 'healthy', "Mock gateway should be healthy"
-        assert health['overall'] in ['healthy', 'degraded'], "Overall should be healthy or degraded"
+        assert health["data_gateway"] == "healthy", "Mock gateway should be healthy"
+        assert health["overall"] in [
+            "healthy",
+            "degraded",
+        ], "Overall should be healthy or degraded"
 
-    def test_screening_performance(self, mock_gateway, screener_config, performance_timer):
+    def test_screening_performance(
+        self, mock_gateway, screener_config, performance_timer
+    ):
         """Test screening performance with multiple stocks"""
         service = StockScreenerService(screener_config, mock_gateway)
 
         # Test with many stocks
-        symbols = [f'TEST_RESISTANCE_{i}' for i in range(20)]  # 20 stocks
+        symbols = [f"TEST_RESISTANCE_{i}" for i in range(20)]  # 20 stocks
 
         performance_timer.start()
         results = service.screen_multiple_stocks(symbols)
         performance_timer.stop()
 
         # Should complete in reasonable time
-        assert performance_timer.elapsed < 5.0, \
-            f"Screening took too long: {performance_timer.elapsed} seconds"
+        assert (
+            performance_timer.elapsed < 5.0
+        ), f"Screening took too long: {performance_timer.elapsed} seconds"
 
         # Should handle all stocks (mock returns same data for any symbol)
         assert results.total_screened == 20, "Should screen all 20 stocks"
@@ -178,38 +215,35 @@ class TestCompleteScreening:
         """Test how different configurations affect results"""
         # Liberal configuration
         liberal_config = ScreenerConfiguration(
-            period="3mo",
-            volume_spike_threshold=1.5,
-            breakout_threshold=0.01
+            period="3mo", volume_spike_threshold=1.5, breakout_threshold=0.01
         )
 
         # Conservative configuration
         conservative_config = ScreenerConfiguration(
-            period="3mo",
-            volume_spike_threshold=4.0,
-            breakout_threshold=0.05
+            period="3mo", volume_spike_threshold=4.0, breakout_threshold=0.05
         )
 
         liberal_service = StockScreenerService(liberal_config, mock_gateway)
         conservative_service = StockScreenerService(conservative_config, mock_gateway)
 
-        symbols = ['TEST_RESISTANCE', 'TEST_VOLUME']
+        symbols = ["TEST_RESISTANCE", "TEST_VOLUME"]
 
         liberal_results = liberal_service.screen_multiple_stocks(symbols)
         conservative_results = conservative_service.screen_multiple_stocks(symbols)
 
         # Liberal configuration should find more signals
-        assert liberal_results.signal_count >= conservative_results.signal_count, \
-            "Liberal config should find at least as many signals as conservative"
+        assert (
+            liberal_results.signal_count >= conservative_results.signal_count
+        ), "Liberal config should find at least as many signals as conservative"
 
     def test_data_flow_integrity(self, mock_gateway, screener_config):
         """Test that data flows correctly through all layers"""
         service = StockScreenerService(screener_config, mock_gateway)
 
-        result = service.screen_single_stock('TEST_RESISTANCE')
+        result = service.screen_single_stock("TEST_RESISTANCE")
 
         # Verify data integrity through the flow
-        assert result.stock_price.symbol == 'TEST_RESISTANCE'
+        assert result.stock_price.symbol == "TEST_RESISTANCE"
         assert result.stock_price.current_price > 0
         assert result.stock_price.volume > 0
         assert result.stock_price.avg_volume > 0
@@ -227,7 +261,13 @@ class TestCompleteScreening:
         """Test ScreeningResults analysis capabilities"""
         service = StockScreenerService(screener_config, mock_gateway)
 
-        symbols = ['TEST_RESISTANCE', 'TEST_MA', 'TEST_VOLUME', 'TEST_NONE', 'TEST_FALSE']
+        symbols = [
+            "TEST_RESISTANCE",
+            "TEST_MA",
+            "TEST_VOLUME",
+            "TEST_NONE",
+            "TEST_FALSE",
+        ]
         results = service.screen_multiple_stocks(symbols)
 
         # Test breakout analysis
@@ -256,7 +296,7 @@ class TestCompleteScreening:
         service = StockScreenerService(screener_config, mock_gateway)
 
         # Step 1: Screen multiple stocks
-        symbols = ['TEST_RESISTANCE', 'TEST_MA', 'TEST_VOLUME', 'TEST_NONE']
+        symbols = ["TEST_RESISTANCE", "TEST_MA", "TEST_VOLUME", "TEST_NONE"]
         all_results = service.screen_multiple_stocks(symbols)
 
         # Step 2: Get market analysis
@@ -270,13 +310,15 @@ class TestCompleteScreening:
 
         # Verify consistency across operations
         assert all_results.total_screened == 4, "Should screen 4 stocks"
-        assert market_analysis['total_screened'] == 4, "Market analysis should match"
+        assert market_analysis["total_screened"] == 4, "Market analysis should match"
         assert len(opportunities) <= 2, "Should have max 2 opportunities"
-        assert signal_results.signal_count <= all_results.signal_count, \
-            "Signal-only results should be subset"
+        assert (
+            signal_results.signal_count <= all_results.signal_count
+        ), "Signal-only results should be subset"
 
         # Verify signal counts are consistent
         expected_signal_count = all_results.signal_count
-        actual_market_signals = market_analysis['stocks_with_signals']
-        assert actual_market_signals == expected_signal_count, \
-            "Market analysis signal count should match screening results"
+        actual_market_signals = market_analysis["stocks_with_signals"]
+        assert (
+            actual_market_signals == expected_signal_count
+        ), "Market analysis signal count should match screening results"

@@ -41,7 +41,9 @@ class ResultsDisplayService:
         self._display_summary(results)
         print(self.header_separator)
 
-    def display_top_opportunities(self, opportunities: list[ScreeningResult], limit: int = 5) -> None:
+    def display_top_opportunities(
+        self, opportunities: list[ScreeningResult], limit: int = 5
+    ) -> None:
         """
         Display top investment opportunities
 
@@ -73,20 +75,22 @@ class ResultsDisplayService:
         print(" MARKET CONDITION ANALYSIS")
         print(self.header_separator)
 
-        condition = analysis.get('condition', 'unknown')
-        signal_pct = analysis.get('signal_percentage', 0)
+        condition = analysis.get("condition", "unknown")
+        signal_pct = analysis.get("signal_percentage", 0)
 
         # Choose emoji based on condition
         condition_emoji = {
-            'very_bullish': '🚀',
-            'bullish': '📈',
-            'neutral_positive': '➡️',
-            'neutral': '😐',
-            'bearish': '📉',
-            'unknown': '❓'
-        }.get(condition, '❓')
+            "very_bullish": "🚀",
+            "bullish": "📈",
+            "neutral_positive": "➡️",
+            "neutral": "😐",
+            "bearish": "📉",
+            "unknown": "❓",
+        }.get(condition, "❓")
 
-        print(f"\n{condition_emoji} Overall Market Condition: {condition.upper().replace('_', ' ')}")
+        print(
+            f"\n{condition_emoji} Overall Market Condition: {condition.upper().replace('_', ' ')}"
+        )
         print(f"📊 Signal Percentage: {signal_pct}%")
         print(f"📈 Breakout Stocks: {analysis.get('breakout_stocks', 0)}")
         print(f"📊 Volume Spike Stocks: {analysis.get('volume_spike_stocks', 0)}")
@@ -94,7 +98,9 @@ class ResultsDisplayService:
 
         print(self.header_separator)
 
-    def _display_single_result(self, result: ScreeningResult, show_quality: bool = False) -> None:
+    def _display_single_result(
+        self, result: ScreeningResult, show_quality: bool = False
+    ) -> None:
         """
         Display a single screening result
 
@@ -111,7 +117,11 @@ class ResultsDisplayService:
 
         # Display breakout signals
         if signals.breakout.signal:
-            signal_type = signals.breakout.signal_type.value if signals.breakout.signal_type else "Unknown"
+            signal_type = (
+                signals.breakout.signal_type.value
+                if signals.breakout.signal_type
+                else "Unknown"
+            )
             strength_pct = signals.breakout.strength * 100
             print(f"   🔥 BREAKOUT: {signal_type} (Strength: {strength_pct:.2f}%)")
 
@@ -121,11 +131,13 @@ class ResultsDisplayService:
             print(f"   📊 VOLUME SPIKE: {volume_ratio:.1f}x average")
 
         # Display quality information if available
-        if show_quality and hasattr(result, 'quality'):
+        if show_quality and hasattr(result, "quality"):
             quality_info = result.quality
-            quality_level = quality_info.get('quality', 'unknown')
-            confidence = quality_info.get('confidence', 0)
-            print(f"   ⭐ Quality: {quality_level.upper()} (Confidence: {confidence:.0%})")
+            quality_level = quality_info.get("quality", "unknown")
+            confidence = quality_info.get("confidence", 0)
+            print(
+                f"   ⭐ Quality: {quality_level.upper()} (Confidence: {confidence:.0%})"
+            )
 
     def _display_summary(self, results: ScreeningResults) -> None:
         """
@@ -139,7 +151,9 @@ class ResultsDisplayService:
         print(f"   Stocks with breakout signals: {results.breakout_count}")
         print(f"   Stocks with volume spikes: {results.volume_spike_count}")
         print(f"   Total stocks with signals: {results.signal_count}")
-        print(f"   Screening completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(
+            f"   Screening completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        )
 
     def display_system_health(self, health_status: dict) -> None:
         """
@@ -152,37 +166,37 @@ class ResultsDisplayService:
         print(" SYSTEM HEALTH STATUS")
         print(self.header_separator)
 
-        overall = health_status.get('overall', 'unknown')
+        overall = health_status.get("overall", "unknown")
 
         # Choose emoji based on overall health
         health_emoji = {
-            'healthy': '✅',
-            'degraded': '⚠️',
-            'unhealthy': '❌',
-            'unknown': '❓'
-        }.get(overall, '❓')
+            "healthy": "✅",
+            "degraded": "⚠️",
+            "unhealthy": "❌",
+            "unknown": "❓",
+        }.get(overall, "❓")
 
         print(f"\n{health_emoji} Overall Status: {overall.upper()}")
 
         # Display component status
         components = {
-            'data_gateway': 'Data Gateway',
-            'technical_service': 'Technical Analysis',
-            'signal_service': 'Signal Detection'
+            "data_gateway": "Data Gateway",
+            "technical_service": "Technical Analysis",
+            "signal_service": "Signal Detection",
         }
 
         for key, name in components.items():
-            status = health_status.get(key, 'unknown')
+            status = health_status.get(key, "unknown")
             status_emoji = {
-                'healthy': '✅',
-                'unhealthy': '❌',
-                'not_testable': '⚪',
-                'unknown': '❓'
-            }.get(status, '❓')
+                "healthy": "✅",
+                "unhealthy": "❌",
+                "not_testable": "⚪",
+                "unknown": "❓",
+            }.get(status, "❓")
 
             print(f"   {status_emoji} {name}: {status}")
 
-        if 'error' in health_status:
+        if "error" in health_status:
             print(f"\n❌ Error: {health_status['error']}")
 
         print(self.header_separator)
@@ -210,7 +224,11 @@ class ResultsDisplayService:
         percentage = (current / total) * 100
         progress_bar = "█" * int(percentage / 5) + "░" * (20 - int(percentage / 5))
 
-        print(f"\r📊 Progress: [{progress_bar}] {percentage:.1f}% - Screening {symbol}...", end="", flush=True)
+        print(
+            f"\r📊 Progress: [{progress_bar}] {percentage:.1f}% - Screening {symbol}...",
+            end="",
+            flush=True,
+        )
 
         if current == total:
             print()  # New line after completion
@@ -223,11 +241,7 @@ class ResultsDisplayService:
             message (str): Error message
             error_type (str): Type of error
         """
-        error_emoji = {
-            'ERROR': '❌',
-            'WARNING': '⚠️',
-            'INFO': 'ℹ️'
-        }.get(error_type, '❌')
+        error_emoji = {"ERROR": "❌", "WARNING": "⚠️", "INFO": "ℹ️"}.get(error_type, "❌")
 
         print(f"\n{error_emoji} {error_type}: {message}")
 

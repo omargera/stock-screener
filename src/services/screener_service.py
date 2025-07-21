@@ -21,7 +21,7 @@ class ScreenerConfiguration:
         self,
         period: str = "3mo",
         volume_spike_threshold: float = 2.0,
-        breakout_threshold: float = 0.02
+        breakout_threshold: float = 0.02,
     ):
         self.period = period
         self.volume_spike_threshold = volume_spike_threshold
@@ -34,7 +34,7 @@ class StockScreenerService:
     def __init__(
         self,
         config: ScreenerConfiguration,
-        data_gateway: Optional[StockDataGateway] = None
+        data_gateway: Optional[StockDataGateway] = None,
     ):
         """
         Initialize the stock screener service
@@ -48,7 +48,7 @@ class StockScreenerService:
         self.technical_service = TechnicalAnalysisService()
         self.signal_service = SignalDetectionService(
             volume_spike_threshold=config.volume_spike_threshold,
-            breakout_threshold=config.breakout_threshold
+            breakout_threshold=config.breakout_threshold,
         )
 
     def screen_single_stock(self, symbol: str) -> Optional[ScreeningResult]:
@@ -84,10 +84,7 @@ class StockScreenerService:
             signals = self.signal_service.detect_all_signals(enhanced_data)
 
             # Step 5: Create screening result
-            result = ScreeningResult(
-                stock_price=stock_data.price_info,
-                signals=signals
-            )
+            result = ScreeningResult(stock_price=stock_data.price_info, signals=signals)
 
             logger.info(f"Completed screening for {symbol}")
             return result
@@ -170,8 +167,12 @@ class StockScreenerService:
                 return {"condition": "unknown", "reason": "no_data"}
 
             # Calculate market metrics
-            breakout_percentage = (results.breakout_count / results.total_screened) * 100
-            volume_spike_percentage = (results.volume_spike_count / results.total_screened) * 100
+            breakout_percentage = (
+                results.breakout_count / results.total_screened
+            ) * 100
+            volume_spike_percentage = (
+                results.volume_spike_count / results.total_screened
+            ) * 100
             signal_percentage = (results.signal_count / results.total_screened) * 100
 
             # Determine market condition
@@ -194,17 +195,21 @@ class StockScreenerService:
                 "total_screened": results.total_screened,
                 "stocks_with_signals": results.signal_count,
                 "breakout_stocks": results.breakout_count,
-                "volume_spike_stocks": results.volume_spike_count
+                "volume_spike_stocks": results.volume_spike_count,
             }
 
-            logger.info(f"Market analysis: {condition} ({signal_percentage:.1f}% with signals)")
+            logger.info(
+                f"Market analysis: {condition} ({signal_percentage:.1f}% with signals)"
+            )
             return analysis
 
         except Exception as e:
             logger.error(f"Error analyzing market conditions: {str(e)}")
             return {"condition": "unknown", "reason": "error"}
 
-    def get_top_opportunities(self, symbols: list[str], limit: int = 5) -> list[ScreeningResult]:
+    def get_top_opportunities(
+        self, symbols: list[str], limit: int = 5
+    ) -> list[ScreeningResult]:
         """
         Get top investment opportunities based on signal strength
 
@@ -227,7 +232,9 @@ class StockScreenerService:
                     result.symbol, self.config.period
                 )
                 if raw_data is not None:
-                    enhanced_data = self.technical_service.calculate_all_indicators(raw_data)
+                    enhanced_data = self.technical_service.calculate_all_indicators(
+                        raw_data
+                    )
                     quality = self.signal_service.analyze_signal_quality(
                         result.signals, enhanced_data
                     )
@@ -256,11 +263,11 @@ class StockScreenerService:
                 "overall": "healthy",
                 "data_gateway": "unknown",
                 "technical_service": "unknown",
-                "signal_service": "unknown"
+                "signal_service": "unknown",
             }
 
             # Test data gateway
-            if hasattr(self.data_gateway, 'test_connection'):
+            if hasattr(self.data_gateway, "test_connection"):
                 if self.data_gateway.test_connection():
                     health_status["data_gateway"] = "healthy"
                 else:
@@ -272,13 +279,16 @@ class StockScreenerService:
             # Test technical service (simple test)
             try:
                 import pandas as pd
-                test_data = pd.DataFrame({
-                    'Open': [100, 101, 102],
-                    'High': [101, 102, 103],
-                    'Low': [99, 100, 101],
-                    'Close': [100.5, 101.5, 102.5],
-                    'Volume': [1000, 1100, 1200]
-                })
+
+                test_data = pd.DataFrame(
+                    {
+                        "Open": [100, 101, 102],
+                        "High": [101, 102, 103],
+                        "Low": [99, 100, 101],
+                        "Close": [100.5, 101.5, 102.5],
+                        "Volume": [1000, 1100, 1200],
+                    }
+                )
                 self.technical_service.calculate_all_indicators(test_data)
                 health_status["technical_service"] = "healthy"
             except Exception:

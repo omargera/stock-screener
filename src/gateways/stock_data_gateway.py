@@ -27,7 +27,9 @@ class YahooFinanceGateway(StockDataGateway):
     def __init__(self):
         self.session = None
 
-    def fetch_stock_data(self, symbol: str, period: str = "3mo") -> Optional[pd.DataFrame]:
+    def fetch_stock_data(
+        self, symbol: str, period: str = "3mo"
+    ) -> Optional[pd.DataFrame]:
         """
         Fetch stock data from Yahoo Finance
 
@@ -53,16 +55,22 @@ class YahooFinanceGateway(StockDataGateway):
                 return None
 
             # Check for required columns
-            required_columns = ['Open', 'High', 'Low', 'Close', 'Volume']
-            missing_columns = [col for col in required_columns if col not in data.columns]
+            required_columns = ["Open", "High", "Low", "Close", "Volume"]
+            missing_columns = [
+                col for col in required_columns if col not in data.columns
+            ]
 
             if missing_columns:
-                logger.error(f"Missing required columns for {symbol}: {missing_columns}")
+                logger.error(
+                    f"Missing required columns for {symbol}: {missing_columns}"
+                )
                 return None
 
             # Validate data quality
             if self._validate_data_quality(data, symbol):
-                logger.info(f"Successfully fetched {len(data)} rows of data for {symbol}")
+                logger.info(
+                    f"Successfully fetched {len(data)} rows of data for {symbol}"
+                )
                 return data
             else:
                 logger.warning(f"Data quality validation failed for {symbol}")
@@ -90,32 +98,38 @@ class YahooFinanceGateway(StockDataGateway):
                 return False
 
             # Check for null values in critical columns
-            critical_columns = ['Close', 'Volume']
+            critical_columns = ["Close", "Volume"]
             for col in critical_columns:
                 null_count = data[col].isnull().sum()
                 if null_count > 0:
-                    logger.warning(f"Found {null_count} null values in {col} for {symbol}")
+                    logger.warning(
+                        f"Found {null_count} null values in {col} for {symbol}"
+                    )
                     # Allow some null values but not too many
                     if null_count > len(data) * 0.1:  # More than 10% null
                         return False
 
             # Check for reasonable price ranges
-            close_prices = data['Close'].dropna()
+            close_prices = data["Close"].dropna()
             if len(close_prices) > 0:
                 min_price = close_prices.min()
                 max_price = close_prices.max()
 
                 # Basic sanity checks
                 if min_price <= 0:
-                    logger.warning(f"Invalid price data for {symbol}: min price {min_price}")
+                    logger.warning(
+                        f"Invalid price data for {symbol}: min price {min_price}"
+                    )
                     return False
 
                 if max_price / min_price > 100:  # Price changed more than 100x
-                    logger.warning(f"Suspicious price range for {symbol}: {min_price} to {max_price}")
+                    logger.warning(
+                        f"Suspicious price range for {symbol}: {min_price} to {max_price}"
+                    )
                     # This might be valid for some stocks, so just warn but don't fail
 
             # Check for reasonable volume
-            volumes = data['Volume'].dropna()
+            volumes = data["Volume"].dropna()
             if len(volumes) > 0 and volumes.sum() == 0:
                 logger.warning(f"No volume data for {symbol}")
                 # Some stocks might have no volume, so don't fail
@@ -143,12 +157,12 @@ class YahooFinanceGateway(StockDataGateway):
             if info:
                 # Extract relevant information
                 return {
-                    'shortName': info.get('shortName', symbol),
-                    'longName': info.get('longName', ''),
-                    'sector': info.get('sector', ''),
-                    'industry': info.get('industry', ''),
-                    'marketCap': info.get('marketCap', 0),
-                    'currency': info.get('currency', 'USD')
+                    "shortName": info.get("shortName", symbol),
+                    "longName": info.get("longName", ""),
+                    "sector": info.get("sector", ""),
+                    "industry": info.get("industry", ""),
+                    "marketCap": info.get("marketCap", 0),
+                    "currency": info.get("currency", "USD"),
                 }
 
             return None
@@ -166,7 +180,7 @@ class YahooFinanceGateway(StockDataGateway):
         """
         try:
             # Try to fetch data for a well-known stock
-            test_data = self.fetch_stock_data('AAPL', '5d')
+            test_data = self.fetch_stock_data("AAPL", "5d")
             return test_data is not None and not test_data.empty
         except Exception as e:
             logger.error(f"Connection test failed: {str(e)}")

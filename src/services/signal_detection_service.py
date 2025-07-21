@@ -14,7 +14,9 @@ logger = logging.getLogger(__name__)
 class SignalDetectionService:
     """Service for detecting various trading signals"""
 
-    def __init__(self, volume_spike_threshold: float = 2.0, breakout_threshold: float = 0.02):
+    def __init__(
+        self, volume_spike_threshold: float = 2.0, breakout_threshold: float = 0.02
+    ):
         """
         Initialize signal detection service
 
@@ -50,8 +52,7 @@ class SignalDetectionService:
             logger.error(f"Error detecting signals: {str(e)}")
             # Return no signals in case of error
             return CombinedSignals(
-                breakout=BreakoutSignal.no_signal(),
-                volume=VolumeSignal.no_signal()
+                breakout=BreakoutSignal.no_signal(), volume=VolumeSignal.no_signal()
             )
 
     def detect_breakout_signals(self, data: pd.DataFrame) -> BreakoutSignal:
@@ -73,10 +74,14 @@ class SignalDetectionService:
             previous = data.iloc[-2]
 
             # Check for resistance breakout (using full data context)
-            resistance_breakout, resistance_strength = self._check_resistance_breakout_with_data(data)
+            resistance_breakout, resistance_strength = (
+                self._check_resistance_breakout_with_data(data)
+            )
 
             if resistance_breakout:
-                logger.info(f"Resistance breakout detected with strength: {resistance_strength:.2%}")
+                logger.info(
+                    f"Resistance breakout detected with strength: {resistance_strength:.2%}"
+                )
                 return BreakoutSignal.resistance_breakout(resistance_strength)
 
             # Check for moving average breakout
@@ -117,8 +122,8 @@ class SignalDetectionService:
                 day_data = data.iloc[-i]
 
                 # Calculate volume ratio for this day
-                if day_data['Volume_MA_20'] > 0:
-                    volume_ratio = day_data['Volume'] / day_data['Volume_MA_20']
+                if day_data["Volume_MA_20"] > 0:
+                    volume_ratio = day_data["Volume"] / day_data["Volume_MA_20"]
                 else:
                     volume_ratio = 0
 
@@ -127,14 +132,20 @@ class SignalDetectionService:
                 # Check for volume spike
                 if volume_ratio >= self.volume_spike_threshold:
                     spike_detected = True
-                    logger.info(f"Volume spike detected on recent day: {volume_ratio:.1f}x average")
+                    logger.info(
+                        f"Volume spike detected on recent day: {volume_ratio:.1f}x average"
+                    )
 
             if spike_detected:
                 return VolumeSignal.volume_spike(max_volume_ratio)
 
             # If no spike detected, return current day ratio for reference
             latest = data.iloc[-1]
-            current_ratio = latest['Volume'] / latest['Volume_MA_20'] if latest['Volume_MA_20'] > 0 else 0
+            current_ratio = (
+                latest["Volume"] / latest["Volume_MA_20"]
+                if latest["Volume_MA_20"] > 0
+                else 0
+            )
 
             return VolumeSignal.no_signal(current_ratio)
 
@@ -142,7 +153,9 @@ class SignalDetectionService:
             logger.error(f"Error detecting volume signals: {str(e)}")
             return VolumeSignal.no_signal()
 
-    def _check_resistance_breakout(self, latest: pd.Series, previous: pd.Series) -> tuple[bool, float]:
+    def _check_resistance_breakout(
+        self, latest: pd.Series, previous: pd.Series
+    ) -> tuple[bool, float]:
         """
         Check for resistance breakout pattern
 
@@ -159,18 +172,20 @@ class SignalDetectionService:
             # 2. Previous price was below resistance
             # 3. Volume confirmation (>1.2x average)
 
-            resistance_threshold = latest['Resistance'] * (1 - self.breakout_threshold)
+            resistance_threshold = latest["Resistance"] * (1 - self.breakout_threshold)
 
             price_breakout = (
-                latest['Close'] > resistance_threshold and
-                previous['Close'] <= previous['Resistance']
+                latest["Close"] > resistance_threshold
+                and previous["Close"] <= previous["Resistance"]
             )
 
-            volume_confirmation = latest['Volume'] > latest['Volume_MA_20'] * 1.2
+            volume_confirmation = latest["Volume"] > latest["Volume_MA_20"] * 1.2
 
             if price_breakout and volume_confirmation:
                 # Calculate breakout strength
-                strength = (latest['Close'] - latest['Resistance']) / latest['Resistance']
+                strength = (latest["Close"] - latest["Resistance"]) / latest[
+                    "Resistance"
+                ]
                 return True, max(0, strength)  # Ensure non-negative strength
 
             return False, 0.0
@@ -179,7 +194,9 @@ class SignalDetectionService:
             logger.error(f"Error checking resistance breakout: {str(e)}")
             return False, 0.0
 
-    def _check_resistance_breakout_with_data(self, data: pd.DataFrame) -> tuple[bool, float]:
+    def _check_resistance_breakout_with_data(
+        self, data: pd.DataFrame
+    ) -> tuple[bool, float]:
         """
         Check for resistance breakout pattern with full data context
 
@@ -196,8 +213,8 @@ class SignalDetectionService:
             latest = data.iloc[-1]
 
             # Check if current price is above resistance threshold
-            resistance_threshold = latest['Resistance'] * (1 - self.breakout_threshold)
-            current_above_resistance = latest['Close'] > resistance_threshold
+            resistance_threshold = latest["Resistance"] * (1 - self.breakout_threshold)
+            current_above_resistance = latest["Close"] > resistance_threshold
 
             if not current_above_resistance:
                 return False, 0.0
@@ -208,7 +225,7 @@ class SignalDetectionService:
 
             for i in range(1, lookback_days + 1):
                 day_data = data.iloc[-i]
-                if day_data['Volume'] > day_data['Volume_MA_20'] * 1.2:
+                if day_data["Volume"] > day_data["Volume_MA_20"] * 1.2:
                     volume_confirmation = True
                     break
 
@@ -217,15 +234,20 @@ class SignalDetectionService:
             for i in range(1, min(5, len(data))):
                 current_day = data.iloc[-i]
                 if i < len(data) - 1:
-                    prev_day = data.iloc[-i-1]
-                    if (current_day['Close'] > current_day['Resistance'] * (1 - self.breakout_threshold) and
-                        prev_day['Close'] <= prev_day['Resistance']):
+                    prev_day = data.iloc[-i - 1]
+                    if (
+                        current_day["Close"]
+                        > current_day["Resistance"] * (1 - self.breakout_threshold)
+                        and prev_day["Close"] <= prev_day["Resistance"]
+                    ):
                         recent_breakout = True
                         break
 
             if recent_breakout and volume_confirmation:
                 # Calculate breakout strength
-                strength = (latest['Close'] - latest['Resistance']) / latest['Resistance']
+                strength = (latest["Close"] - latest["Resistance"]) / latest[
+                    "Resistance"
+                ]
                 return True, max(0, strength)  # Ensure non-negative strength
 
             return False, 0.0
@@ -234,7 +256,9 @@ class SignalDetectionService:
             logger.error(f"Error checking resistance breakout with data: {str(e)}")
             return False, 0.0
 
-    def _check_ma_breakout(self, latest: pd.Series, previous: pd.Series) -> tuple[bool, float]:
+    def _check_ma_breakout(
+        self, latest: pd.Series, previous: pd.Series
+    ) -> tuple[bool, float]:
         """
         Check for moving average breakout pattern
 
@@ -251,13 +275,13 @@ class SignalDetectionService:
             # 2. Previous price was below SMA 20
             # 3. SMA 20 > SMA 50 (uptrend confirmation)
 
-            price_above_sma = latest['Close'] > latest['SMA_20']
-            previous_below_sma = previous['Close'] <= previous['SMA_20']
-            uptrend_confirmation = latest['SMA_20'] > latest['SMA_50']
+            price_above_sma = latest["Close"] > latest["SMA_20"]
+            previous_below_sma = previous["Close"] <= previous["SMA_20"]
+            uptrend_confirmation = latest["SMA_20"] > latest["SMA_50"]
 
             if price_above_sma and previous_below_sma and uptrend_confirmation:
                 # Calculate breakout strength
-                strength = (latest['Close'] - latest['SMA_20']) / latest['SMA_20']
+                strength = (latest["Close"] - latest["SMA_20"]) / latest["SMA_20"]
                 return True, max(0, strength)  # Ensure non-negative strength
 
             return False, 0.0
@@ -266,7 +290,9 @@ class SignalDetectionService:
             logger.error(f"Error checking MA breakout: {str(e)}")
             return False, 0.0
 
-    def analyze_signal_quality(self, signals: CombinedSignals, data: pd.DataFrame) -> dict:
+    def analyze_signal_quality(
+        self, signals: CombinedSignals, data: pd.DataFrame
+    ) -> dict:
         """
         Analyze the quality and reliability of detected signals
 
@@ -286,26 +312,30 @@ class SignalDetectionService:
             factors = []
 
             # Volume confirmation
-            if latest['Volume'] > latest['Volume_MA_20'] * 1.5:
+            if latest["Volume"] > latest["Volume_MA_20"] * 1.5:
                 quality_score += 0.3
                 factors.append("strong_volume")
-            elif latest['Volume'] > latest['Volume_MA_20']:
+            elif latest["Volume"] > latest["Volume_MA_20"]:
                 quality_score += 0.15
                 factors.append("good_volume")
 
             # Trend confirmation
-            if latest['SMA_20'] > latest['SMA_50']:
+            if latest["SMA_20"] > latest["SMA_50"]:
                 quality_score += 0.2
                 factors.append("uptrend")
 
             # Volatility check (not too volatile)
-            avg_price = latest['SMA_20']
-            if avg_price > 0 and latest['Price_Volatility'] / avg_price < 0.05:  # Less than 5% volatility
+            avg_price = latest["SMA_20"]
+            if (
+                avg_price > 0 and latest["Price_Volatility"] / avg_price < 0.05
+            ):  # Less than 5% volatility
                 quality_score += 0.2
                 factors.append("low_volatility")
 
             # Signal strength
-            if signals.breakout.signal and signals.breakout.strength > 0.03:  # >3% breakout
+            if (
+                signals.breakout.signal and signals.breakout.strength > 0.03
+            ):  # >3% breakout
                 quality_score += 0.3
                 factors.append("strong_breakout")
 
@@ -323,7 +353,7 @@ class SignalDetectionService:
                 "quality": quality,
                 "confidence": quality_score,
                 "factors": factors,
-                "score": quality_score
+                "score": quality_score,
             }
 
         except Exception as e:

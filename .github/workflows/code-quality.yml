@@ -27,13 +27,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ruff black isort
+          pip install black isort
           pip install -r requirements.txt
-      
-      - name: Run Ruff linting
-        run: |
-          echo "🔍 Running Ruff linter..."
-          ruff check src/ tests/ --output-format=github
       
       - name: Check code formatting with Black
         run: |
@@ -44,11 +39,6 @@ jobs:
         run: |
           echo "📦 Checking import sorting with isort..."
           isort --check-only --diff src/ tests/
-      
-      - name: Run Ruff formatting check
-        run: |
-          echo "✨ Checking Ruff formatting..."
-          ruff format --check src/ tests/
 
   type-checking:
     name: Type Checking

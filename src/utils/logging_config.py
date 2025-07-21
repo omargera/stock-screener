@@ -19,7 +19,7 @@ class LoggingConfig:
         log_file_path: Optional[str] = None,
         max_file_size: int = 10 * 1024 * 1024,  # 10MB
         backup_count: int = 5,
-        format_style: str = "detailed"
+        format_style: str = "detailed",
     ) -> None:
         """
         Set up application logging configuration
@@ -75,7 +75,7 @@ class LoggingConfig:
             "simple": "%(levelname)s - %(message)s",
             "detailed": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
             "json": "%(asctime)s | %(name)s | %(levelname)s | %(message)s",
-            "debug": "%(asctime)s - %(name)s:%(lineno)d - %(levelname)s - %(funcName)s() - %(message)s"
+            "debug": "%(asctime)s - %(name)s:%(lineno)d - %(levelname)s - %(funcName)s() - %(message)s",
         }
 
         format_string = formats.get(style, formats["detailed"])
@@ -86,7 +86,7 @@ class LoggingConfig:
         log_file_path: Optional[str],
         max_file_size: int,
         backup_count: int,
-        formatter: logging.Formatter
+        formatter: logging.Formatter,
     ) -> Optional[logging.Handler]:
         """
         Set up rotating file handler
@@ -106,7 +106,9 @@ class LoggingConfig:
                 logs_dir = "logs"
                 os.makedirs(logs_dir, exist_ok=True)
                 timestamp = datetime.now().strftime("%Y%m%d")
-                log_file_path = os.path.join(logs_dir, f"stock_screener_{timestamp}.log")
+                log_file_path = os.path.join(
+                    logs_dir, f"stock_screener_{timestamp}.log"
+                )
 
             # Create directory if it doesn't exist
             log_dir = os.path.dirname(log_file_path)
@@ -115,9 +117,7 @@ class LoggingConfig:
 
             # Create rotating file handler
             file_handler = logging.handlers.RotatingFileHandler(
-                log_file_path,
-                maxBytes=max_file_size,
-                backupCount=backup_count
+                log_file_path, maxBytes=max_file_size, backupCount=backup_count
             )
             file_handler.setFormatter(formatter)
 
@@ -131,27 +131,21 @@ class LoggingConfig:
     def setup_development_logging() -> None:
         """Set up logging for development environment"""
         LoggingConfig.setup_logging(
-            level="DEBUG",
-            log_to_file=True,
-            format_style="debug"
+            level="DEBUG", log_to_file=True, format_style="debug"
         )
 
     @staticmethod
     def setup_production_logging() -> None:
         """Set up logging for production environment"""
         LoggingConfig.setup_logging(
-            level="INFO",
-            log_to_file=True,
-            format_style="detailed"
+            level="INFO", log_to_file=True, format_style="detailed"
         )
 
     @staticmethod
     def setup_quiet_logging() -> None:
         """Set up minimal logging for quiet operation"""
         LoggingConfig.setup_logging(
-            level="WARNING",
-            log_to_file=False,
-            format_style="simple"
+            level="WARNING", log_to_file=False, format_style="simple"
         )
 
     @staticmethod
@@ -179,7 +173,7 @@ class PerformanceLogger:
         symbols_count: int,
         execution_time: float,
         successful_screens: int,
-        failed_screens: int
+        failed_screens: int,
     ) -> None:
         """
         Log screening performance metrics
@@ -191,7 +185,9 @@ class PerformanceLogger:
             failed_screens (int): Number of failed screens
         """
         avg_time_per_symbol = execution_time / symbols_count if symbols_count > 0 else 0
-        success_rate = (successful_screens / symbols_count * 100) if symbols_count > 0 else 0
+        success_rate = (
+            (successful_screens / symbols_count * 100) if symbols_count > 0 else 0
+        )
 
         self.logger.info(
             f"Screening Performance: "
@@ -203,7 +199,9 @@ class PerformanceLogger:
             f"Success Rate={success_rate:.1f}%"
         )
 
-    def log_api_performance(self, symbol: str, fetch_time: float, data_points: int) -> None:
+    def log_api_performance(
+        self, symbol: str, fetch_time: float, data_points: int
+    ) -> None:
         """
         Log API fetch performance
 
@@ -226,11 +224,7 @@ class AuditLogger:
         self.logger = logging.getLogger(logger_name)
 
     def log_screening_session(
-        self,
-        session_id: str,
-        symbols: list,
-        config: dict,
-        results_summary: dict
+        self, session_id: str, symbols: list, config: dict, results_summary: dict
     ) -> None:
         """
         Log a complete screening session for audit purposes
@@ -271,7 +265,7 @@ def setup_default_logging(environment: str = "production") -> None:
     env_setups = {
         "development": LoggingConfig.setup_development_logging,
         "production": LoggingConfig.setup_production_logging,
-        "quiet": LoggingConfig.setup_quiet_logging
+        "quiet": LoggingConfig.setup_quiet_logging,
     }
 
     setup_func = env_setups.get(environment, LoggingConfig.setup_production_logging)

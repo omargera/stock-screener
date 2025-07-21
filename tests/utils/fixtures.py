@@ -30,9 +30,7 @@ def test_scenarios():
 def screener_config():
     """Standard screener configuration for testing"""
     return ScreenerConfiguration(
-        period="3mo",
-        volume_spike_threshold=2.0,
-        breakout_threshold=0.02
+        period="3mo", volume_spike_threshold=2.0, breakout_threshold=0.02
     )
 
 
@@ -42,7 +40,7 @@ def strict_screener_config():
     return ScreenerConfiguration(
         period="3mo",
         volume_spike_threshold=3.0,  # Higher threshold
-        breakout_threshold=0.05     # Higher threshold
+        breakout_threshold=0.05,  # Higher threshold
     )
 
 
@@ -55,7 +53,9 @@ class MockStockDataGateway(StockDataGateway):
         self.last_symbol = None
         self.last_period = None
 
-    def fetch_stock_data(self, symbol: str, period: str = "3mo") -> Optional[pd.DataFrame]:
+    def fetch_stock_data(
+        self, symbol: str, period: str = "3mo"
+    ) -> Optional[pd.DataFrame]:
         """
         Mock fetch that returns test data based on symbol
 
@@ -72,15 +72,15 @@ class MockStockDataGateway(StockDataGateway):
 
         # Map symbols to test scenarios
         symbol_mapping = {
-            'TEST_RESISTANCE': 'resistance_breakout',
-            'TEST_MA': 'ma_breakout',
-            'TEST_VOLUME': 'volume_spike',
-            'TEST_NONE': 'no_signal',
-            'TEST_FALSE': 'false_breakout',
-            'TEST': 'resistance_breakout'  # Default
+            "TEST_RESISTANCE": "resistance_breakout",
+            "TEST_MA": "ma_breakout",
+            "TEST_VOLUME": "volume_spike",
+            "TEST_NONE": "no_signal",
+            "TEST_FALSE": "false_breakout",
+            "TEST": "resistance_breakout",  # Default
         }
 
-        scenario = symbol_mapping.get(symbol, 'no_signal')
+        scenario = symbol_mapping.get(symbol, "no_signal")
         return self.test_data.get(scenario)
 
     def test_connection(self) -> bool:
@@ -121,21 +121,23 @@ class TestDataBuilder:
             self.with_basic_data()
 
         for i in range(from_day, min(to_day, len(self.data))):
-            self.data.iloc[i, self.data.columns.get_loc('High')] = min(
-                self.data.iloc[i]['High'], level
+            self.data.iloc[i, self.data.columns.get_loc("High")] = min(
+                self.data.iloc[i]["High"], level
             )
         return self
 
-    def with_breakout_on_day(self, day: int, price: float, volume_multiplier: float = 2.0):
+    def with_breakout_on_day(
+        self, day: int, price: float, volume_multiplier: float = 2.0
+    ):
         """Add breakout on specific day"""
         if self.data is None:
             self.with_basic_data()
 
         if day < len(self.data):
-            self.data.iloc[day, self.data.columns.get_loc('Close')] = price
-            self.data.iloc[day, self.data.columns.get_loc('High')] = price * 1.01
-            self.data.iloc[day, self.data.columns.get_loc('Volume')] = int(
-                self.data.iloc[day]['Volume'] * volume_multiplier
+            self.data.iloc[day, self.data.columns.get_loc("Close")] = price
+            self.data.iloc[day, self.data.columns.get_loc("High")] = price * 1.01
+            self.data.iloc[day, self.data.columns.get_loc("Volume")] = int(
+                self.data.iloc[day]["Volume"] * volume_multiplier
             )
         return self
 
@@ -145,8 +147,8 @@ class TestDataBuilder:
             self.with_basic_data()
 
         if day < len(self.data):
-            self.data.iloc[day, self.data.columns.get_loc('Volume')] = int(
-                self.data.iloc[day]['Volume'] * multiplier
+            self.data.iloc[day, self.data.columns.get_loc("Volume")] = int(
+                self.data.iloc[day]["Volume"] * multiplier
             )
         return self
 
@@ -168,7 +170,7 @@ def create_expected_signals(
     breakout_type: str = None,
     breakout_strength: float = 0.0,
     volume_spike: bool = False,
-    volume_ratio: float = 0.0
+    volume_ratio: float = 0.0,
 ) -> dict:
     """
     Create expected signal results for testing
@@ -184,15 +186,12 @@ def create_expected_signals(
         dict: Expected signals structure
     """
     return {
-        'breakout': {
-            'signal': breakout,
-            'type': breakout_type,
-            'strength': breakout_strength
+        "breakout": {
+            "signal": breakout,
+            "type": breakout_type,
+            "strength": breakout_strength,
         },
-        'volume': {
-            'signal': volume_spike,
-            'ratio': volume_ratio
-        }
+        "volume": {"signal": volume_spike, "ratio": volume_ratio},
     }
 
 
@@ -212,10 +211,12 @@ class PerformanceTimer:
 
     def start(self):
         import time
+
         self.start_time = time.time()
 
     def stop(self):
         import time
+
         self.end_time = time.time()
 
     @property
@@ -250,21 +251,23 @@ def assert_no_signals(result):
 def assert_signal_strength(result, min_strength: float = 0.0):
     """Assert signal strength meets minimum threshold"""
     if result.signals.breakout.signal:
-        assert result.signals.breakout.strength >= min_strength, \
-            f"Breakout strength {result.signals.breakout.strength} below minimum {min_strength}"
+        assert (
+            result.signals.breakout.strength >= min_strength
+        ), f"Breakout strength {result.signals.breakout.strength} below minimum {min_strength}"
 
 
 def assert_volume_ratio(result, min_ratio: float = 0.0):
     """Assert volume ratio meets minimum threshold"""
     if result.signals.volume.signal:
-        assert result.signals.volume.volume_ratio >= min_ratio, \
-            f"Volume ratio {result.signals.volume.volume_ratio} below minimum {min_ratio}"
+        assert (
+            result.signals.volume.volume_ratio >= min_ratio
+        ), f"Volume ratio {result.signals.volume.volume_ratio} below minimum {min_ratio}"
 
 
 # Export assertion helpers
 __all__ = [
-    'assert_signal_detected',
-    'assert_no_signals',
-    'assert_signal_strength',
-    'assert_volume_ratio'
+    "assert_signal_detected",
+    "assert_no_signals",
+    "assert_signal_strength",
+    "assert_volume_ratio",
 ]
