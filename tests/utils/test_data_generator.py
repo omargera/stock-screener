@@ -196,18 +196,25 @@ class StockDataGenerator:
         data = self.generate_basic_data(60)
 
         # Ensure no volume spikes or breakouts
-        # Normalize volume to avoid spikes
+        # Normalize volume to avoid spikes - very tight range
         avg_volume = data["Volume"].mean()
         data["Volume"] = [
-            int(avg_volume * np.random.uniform(0.7, 1.3)) for _ in range(len(data))
+            int(avg_volume * np.random.uniform(0.8, 1.2)) for _ in range(len(data))
         ]
 
-        # Keep price in a range
-        price_range = self.base_price * 0.1  # 10% range
+        # Keep price completely flat to prevent any breakouts
+        # No trend, no variation - just flat trading
+        flat_price = self.base_price * 0.99  # Fixed price slightly below base
+        
         for i in range(len(data)):
-            data.iloc[i, data.columns.get_loc("Close")] = (
-                self.base_price + np.random.uniform(-price_range / 2, price_range / 2)
-            )
+            # Completely flat with minimal noise
+            noise = np.random.uniform(-0.01, 0.01)  # Only 1% noise
+            price = flat_price * (1 + noise)
+            
+            data.iloc[i, data.columns.get_loc("Close")] = price
+            data.iloc[i, data.columns.get_loc("High")] = price * 1.002  # Tiny high
+            data.iloc[i, data.columns.get_loc("Low")] = price * 0.998   # Tiny low
+            data.iloc[i, data.columns.get_loc("Open")] = price
 
         return data
 

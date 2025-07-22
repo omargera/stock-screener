@@ -144,7 +144,7 @@ class TestTechnicalAnalysisService:
 
         # Set specific price pattern
         close_prices = [100, 102, 104, 103, 105]  # Known price changes
-        data["Close"][:5] = close_prices
+        data.iloc[:5, data.columns.get_loc("Close")] = close_prices
 
         result = self.service.calculate_all_indicators(data)
 

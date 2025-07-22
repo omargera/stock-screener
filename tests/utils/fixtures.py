@@ -97,7 +97,7 @@ def mock_gateway():
 @pytest.fixture
 def mock_failing_gateway():
     """Mock gateway that simulates failures"""
-    gateway = Mock(spec=StockDataGateway)
+    gateway = Mock()
     gateway.fetch_stock_data.return_value = None
     gateway.test_connection.return_value = False
     return gateway
