@@ -106,12 +106,13 @@ class TestSignalDetectionService:
 
     def test_custom_breakout_scenario(self, data_builder):
         """Test with custom breakout scenario"""
-        # Create specific breakout pattern
+        # Create specific breakout pattern with volume spike before price breakout
         data = (
             data_builder("TEST", 100.0)
             .with_basic_data(60)
             .with_resistance_at(110.0, 30, 50)
-            .with_breakout_on_day(55, 112.0, 2.5)
+            .with_volume_spike_on_day(54, 2.5)  # Volume spike day before breakout
+            .with_breakout_on_day(55, 112.0, 1.0)  # Price breakout without additional volume
             .build()
         )
 
@@ -276,7 +277,8 @@ class TestSignalDetectionService:
             data_builder("TEST", 100.0)
             .with_basic_data(60)
             .with_resistance_at(110.0, 30, 50)
-            .with_breakout_on_day(55, 112.0, 3.0)  # Both breakout and volume spike
+            .with_volume_spike_on_day(54, 3.0)  # Volume spike day before breakout
+            .with_breakout_on_day(55, 112.0, 1.0)  # Price breakout
             .build()
         )
 

@@ -73,21 +73,30 @@ class SignalDetectionService:
             latest = data.iloc[-1]
             previous = data.iloc[-2]
 
-            # Check for resistance breakout (using full data context)
+            # Check for both types of breakouts
             resistance_breakout, resistance_strength = (
                 self._check_resistance_breakout_with_data(data)
             )
-
-            if resistance_breakout:
-                logger.info(
-                    f"Resistance breakout detected with strength: {resistance_strength:.2%}"
-                )
-                return BreakoutSignal.resistance_breakout(resistance_strength)
-
-            # Check for moving average breakout
             ma_breakout, ma_strength = self._check_ma_breakout(latest, previous)
 
-            if ma_breakout:
+            # Prioritize based on which signal is stronger and more appropriate
+            if resistance_breakout and ma_breakout:
+                # If both are detected, choose based on which is more significant
+                # MA breakout is preferred for gradual trend changes
+                # Resistance breakout is preferred for clear level breaks
+                close_to_resistance = abs(latest["Close"] - latest["Resistance"]) / latest["Resistance"] < 0.05
+                close_to_ma = abs(latest["Close"] - latest["SMA_20"]) / latest["SMA_20"] < 0.05
+                
+                if close_to_resistance and resistance_strength > ma_strength:
+                    logger.info(f"Resistance breakout detected with strength: {resistance_strength:.2%}")
+                    return BreakoutSignal.resistance_breakout(resistance_strength)
+                else:
+                    logger.info(f"MA breakout detected with strength: {ma_strength:.2%}")
+                    return BreakoutSignal.ma_breakout(ma_strength)
+            elif resistance_breakout:
+                logger.info(f"Resistance breakout detected with strength: {resistance_strength:.2%}")
+                return BreakoutSignal.resistance_breakout(resistance_strength)
+            elif ma_breakout:
                 logger.info(f"MA breakout detected with strength: {ma_strength:.2%}")
                 return BreakoutSignal.ma_breakout(ma_strength)
 
@@ -207,47 +216,60 @@ class SignalDetectionService:
             Tuple[bool, float]: (is_breakout, strength)
         """
         try:
-            if len(data) < 2:
+            if len(data) < 10:  # Need enough data for resistance analysis
                 return False, 0.0
 
             latest = data.iloc[-1]
 
-            # Check if current price is above resistance threshold
-            resistance_threshold = latest["Resistance"] * (1 - self.breakout_threshold)
-            current_above_resistance = latest["Close"] > resistance_threshold
-
-            if not current_above_resistance:
-                return False, 0.0
-
             # Look for recent volume confirmation (within last 5 days)
             volume_confirmation = False
+            volume_spike_day = None
             lookback_days = min(5, len(data))
 
             for i in range(1, lookback_days + 1):
                 day_data = data.iloc[-i]
                 if day_data["Volume"] > day_data["Volume_MA_20"] * 1.2:
                     volume_confirmation = True
+                    volume_spike_day = len(data) - i
                     break
 
-            # Check that price recently broke above resistance
+            if not volume_confirmation:
+                return False, 0.0
+
+            # Find the resistance level before the volume spike
+            # Look at resistance 5-10 days before the volume spike
+            if volume_spike_day is None or volume_spike_day < 10:
+                return False, 0.0
+            
+            # Use resistance from before the spike (5-10 days before spike day)
+            pre_spike_start = max(0, volume_spike_day - 10)
+            pre_spike_end = volume_spike_day - 5
+            
+            if pre_spike_end <= pre_spike_start:
+                return False, 0.0
+                
+            pre_spike_resistance = data.iloc[pre_spike_start:pre_spike_end]["Resistance"].max()
+            
+            # Check if current price is above the pre-spike resistance
+            resistance_threshold = pre_spike_resistance * (1 + self.breakout_threshold)
+            current_above_resistance = latest["Close"] > resistance_threshold
+
+            if not current_above_resistance:
+                return False, 0.0
+
+            # Check that price broke above the pre-spike resistance recently
             recent_breakout = False
-            for i in range(1, min(5, len(data))):
-                current_day = data.iloc[-i]
-                if i < len(data) - 1:
-                    prev_day = data.iloc[-i - 1]
-                    if (
-                        current_day["Close"]
-                        > current_day["Resistance"] * (1 - self.breakout_threshold)
-                        and prev_day["Close"] <= prev_day["Resistance"]
-                    ):
-                        recent_breakout = True
-                        break
+            for i in range(volume_spike_day, min(len(data), volume_spike_day + 5)):
+                if i >= len(data):
+                    break
+                current_day = data.iloc[i]
+                if current_day["Close"] > resistance_threshold:
+                    recent_breakout = True
+                    break
 
             if recent_breakout and volume_confirmation:
-                # Calculate breakout strength
-                strength = (latest["Close"] - latest["Resistance"]) / latest[
-                    "Resistance"
-                ]
+                # Calculate breakout strength using pre-spike resistance
+                strength = (latest["Close"] - pre_spike_resistance) / pre_spike_resistance
                 return True, max(0, strength)  # Ensure non-negative strength
 
             return False, 0.0

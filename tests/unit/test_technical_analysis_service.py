@@ -77,9 +77,12 @@ class TestTechnicalAnalysisService:
         """Test volume indicator calculations"""
         data = data_builder("TEST", 100.0).with_basic_data(30).build()
 
-        # Set specific volume pattern
+        # Set specific volume and price patterns (both increasing)
         volumes = [1000000 * (1 + 0.1 * i) for i in range(30)]  # Increasing volume
+        prices = [100.0 * (1 + 0.01 * i) for i in range(30)]  # Increasing prices
+        
         data["Volume"] = volumes
+        data["Close"] = prices
 
         result = self.service.calculate_all_indicators(data)
 

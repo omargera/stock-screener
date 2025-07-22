@@ -125,37 +125,41 @@ class StockDataGenerator:
         """
         data = self.generate_basic_data(60)
 
-        # Create downtrend first, then breakout
-        # Days 0-40: Gradual decline
-        decline_factor = 0.8
+        # Create a more controlled pattern for MA breakout
+        # Days 0-40: Higher prices to establish higher SMA_50
         for i in range(40):
-            factor = 1 - (i / 40) * (1 - decline_factor)
-            data.iloc[i, data.columns.get_loc("Close")] = self.base_price * factor
-            data.iloc[i, data.columns.get_loc("High")] = data.iloc[i]["Close"] * 1.02
-            data.iloc[i, data.columns.get_loc("Low")] = data.iloc[i]["Close"] * 0.98
-            data.iloc[i, data.columns.get_loc("Open")] = data.iloc[i]["Close"] * 1.01
+            price = self.base_price * (1.02 - i * 0.005)  # Gradual decline from higher level
+            data.iloc[i, data.columns.get_loc("Close")] = price
+            data.iloc[i, data.columns.get_loc("High")] = price * 1.01
+            data.iloc[i, data.columns.get_loc("Low")] = price * 0.99
+            data.iloc[i, data.columns.get_loc("Open")] = price
 
-        # Days 40-50: Consolidation around MA
-        consolidation_price = self.base_price * decline_factor
-        for i in range(40, 50):
-            data.iloc[i, data.columns.get_loc("Close")] = (
-                consolidation_price + np.random.uniform(-2, 2)
-            )
+        # Days 40-58: Lower consolidation to create SMA_20 < SMA_50 but recent recovery
+        consolidation_price = self.base_price * 0.87
+        for i in range(40, 58):
+            # Gradual recovery but still below what will become SMA_20
+            recovery_factor = (i - 40) / 18 * 0.08  # Gradual 8% recovery over 18 days
+            price = consolidation_price + recovery_factor * self.base_price
+            data.iloc[i, data.columns.get_loc("Close")] = price
+            data.iloc[i, data.columns.get_loc("High")] = price * 1.01
+            data.iloc[i, data.columns.get_loc("Low")] = price * 0.99
+            data.iloc[i, data.columns.get_loc("Open")] = price
 
-        # Day 55: MA breakout with volume
-        breakout_day = 55
-        breakout_price = consolidation_price * 1.05
-        data.iloc[breakout_day, data.columns.get_loc("Close")] = breakout_price
-        data.iloc[breakout_day, data.columns.get_loc("High")] = breakout_price * 1.02
-        data.iloc[breakout_day, data.columns.get_loc("Volume")] = int(
-            data.iloc[breakout_day]["Volume"] * 2.5
+        # Day 58: Make sure this is clearly below SMA_20
+        pre_breakout_price = self.base_price * 0.87  # Lower to ensure below SMA_20
+        data.iloc[58, data.columns.get_loc("Close")] = pre_breakout_price
+        data.iloc[58, data.columns.get_loc("High")] = pre_breakout_price * 1.01
+        data.iloc[58, data.columns.get_loc("Low")] = pre_breakout_price * 0.99
+        data.iloc[58, data.columns.get_loc("Open")] = pre_breakout_price
+
+        # Day 59 (last day): Clear MA breakout with volume
+        breakout_price = self.base_price * 0.98  # Above SMA_20 but reasonable
+        data.iloc[59, data.columns.get_loc("Close")] = breakout_price
+        data.iloc[59, data.columns.get_loc("High")] = breakout_price * 1.02
+        data.iloc[59, data.columns.get_loc("Low")] = breakout_price * 0.98
+        data.iloc[59, data.columns.get_loc("Volume")] = int(
+            data.iloc[59]["Volume"] * 2.5
         )
-
-        # Continue uptrend
-        for i in range(breakout_day + 1, len(data)):
-            data.iloc[i, data.columns.get_loc("Close")] = breakout_price * (
-                1 + (i - breakout_day) * 0.01
-            )
 
         return data
 
